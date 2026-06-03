@@ -13,14 +13,14 @@ extern MachineState currentState;
 enum LiveSubState { SELECT_TRACK, ADJUST_TRACK_VOLUME };
 extern LiveSubState liveMode;
 
-// --- PINS (À adapter selon votre câblage) ---
+// --- PINS (À adapter selon le câblage) ---
 const int PIN_B1 = 24; const int PIN_B2 = 26;
 const int PIN_B3 = 28; const int PIN_B4 = 30;
 const int PIN_POT_DSP = 14;  
 const int PIN_POT_VOL = 15;  
-const int PIN_ENC_A = 2;     
-const int PIN_ENC_B = 3;     
-const int PIN_ENC_BTN = 4;   
+const int PIN_ENC_A = 37;     
+const int PIN_ENC_B = 39;     
+const int PIN_ENC_BTN = 41;   
 
 // --- VARIABLES DU JEU ---
 extern int currentKit;       // 1: Hip-Hop, 2: Synthwave, 3: Lo-Fi
@@ -42,6 +42,12 @@ extern Encoder myEnc;
 extern Bounce encBtn;
 extern bool isRunning;
 void playTrack(int i);
+void drawBootScreen();
+void setupControls();
+extern unsigned long bootTimer;
+
+void stopAllAudio();
+void resetMachine();
 
 #endif
 

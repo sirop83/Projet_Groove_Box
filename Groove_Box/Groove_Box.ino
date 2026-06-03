@@ -1,6 +1,6 @@
 #include "Config.h"
 
-// --- INITIALISATION DES VARIABLES (Déclarées dans Config.h) ---
+// --- INITIALISATION DES VARIABLES ---
 MachineState currentState = STATE_BOOT;
 LiveSubState liveMode = SELECT_TRACK;
 
@@ -17,6 +17,8 @@ bool showDspPopUp = false;
 bool isRunning = false;
 int dspValue = 0;
 
+unsigned long bootTimer = 0; // LE NOUVEAU CHRONOMÈTRE
+
 // Écran I2C
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 
@@ -26,30 +28,38 @@ Bounce encBtn = Bounce();
 
 void setup() {
   Serial.begin(115200);
+  
+  delay(500); // Laisse une demi-seconde à l'écran pour avoir du courant
   u8g2.begin();
-  setupControls(); // Logique dans Controls.ino
-  // setupAudio(); // À décommenter quand Mathys remettra le code audio
+
+  setupControls(); 
+  setupAudio(); 
+  
+  bootTimer = millis(); // On déclenche le chrono ICI !
 }
 
 void loop() {
-  updateControls(); // Lecture de l'encodeur et des boutons
+  updateControls(); 
 
-  u8g2.clearBuffer(); // On efface l'écran à chaque frame
+  // PHASE 1 : L'écran de démarrage pendant 3 secondes
+  if (currentState == STATE_BOOT) {
+    drawBootScreen();
+    
+    if (millis() - bootTimer > 3000) { // Si 3 secondes sont passées
+      currentState = STATE_MENU;
+    }
+  } 
+  // PHASE 2 : L'interface normale
+  else {
+    u8g2.clearBuffer(); 
 
-  switch (currentState) {
-    case STATE_BOOT:
-      drawBootScreen();
-      break;
-
-    case STATE_MENU:
+    if (currentState == STATE_MENU) {
       drawMenuScreen();
-      break;
-
-    case STATE_LIVE:
-      // runAudioEngine(); // Le séquenceur audio
+    } else if (currentState == STATE_LIVE) {
+      runAudioEngine();
       drawLiveScreen();
-      break;
-  }
+    }
 
-  u8g2.sendBuffer(); // On envoie l'image à l'écran
+    u8g2.sendBuffer(); 
+  }
 }

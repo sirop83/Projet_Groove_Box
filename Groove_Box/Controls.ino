@@ -4,10 +4,8 @@ long oldEncPosition = 0;
 unsigned long btnPressTime = 0;
 bool isLongPress = false;
 
-// Variables pour les 4 boutons de piste
 Bounce btn1 = Bounce(); Bounce btn2 = Bounce();
 Bounce btn3 = Bounce(); Bounce btn4 = Bounce();
-
 
 void playTrack(int i);
 
@@ -20,18 +18,40 @@ void setupControls() {
   pinMode(PIN_B2, INPUT_PULLUP); btn2.attach(PIN_B2); btn2.interval(10);
   pinMode(PIN_B3, INPUT_PULLUP); btn3.attach(PIN_B3); btn3.interval(10);
   pinMode(PIN_B4, INPUT_PULLUP); btn4.attach(PIN_B4); btn4.interval(10);
+
+  dspValue = analogRead(PIN_POT_VOL); 
 }
 
-// Fonction intermédiaire pour gérer l'activation propre d'une piste
+void resetMachine() {
+  isRunning = false;
+  nextLoopTime = 0;
+  liveMode = SELECT_TRACK;
+  selectedTrackIdx = 0;
+  for (int i = 0; i < 4; i++) {
+    trackActive[i] = false;
+    trackVolumes[i] = 1.0; 
+  }
+  stopAllAudio();
+}
+
 void piloterPiste(int i) {
   trackActive[i] = !trackActive[i]; 
   
-  // Si le séquenceur est arrêté et qu'on active une piste, on le réveille immédiatement
   if (!isRunning && trackActive[i]) {
-    Serial.println(">>> DEMARRAGE DU SEQUENCEUR ! <<<");
     isRunning = true;
     nextLoopTime = millis() + loopLengthMs; 
-    playTrack(i); // On lance le premier sample immédiatement
+    playTrack(i);
+  }
+  else if (isRunning) {
+    bool plusAucunePisteActive = true;
+    for (int j = 0; j < 4; j++) {
+      if (trackActive[j]) plusAucunePisteActive = false;
+    }
+    if (plusAucunePisteActive) {
+      isRunning = false;
+      nextLoopTime = 0;
+      stopAllAudio();
+    }
   }
 }
 
@@ -43,7 +63,6 @@ void updateControls() {
   int deltaEnc = newEncPosition - oldEncPosition;
   if (deltaEnc != 0) oldEncPosition = newEncPosition;
 
-  // --- GESTION DU CLIC ET APPUI LONG ---
   if (encBtn.fell()) {
     btnPressTime = millis();
     isLongPress = false;
@@ -51,6 +70,7 @@ void updateControls() {
   
   if (encBtn.read() == LOW && (millis() - btnPressTime > 1000) && currentState == STATE_LIVE && !isLongPress) {
     isLongPress = true;
+    resetMachine();
     currentState = STATE_MENU; 
     return;
   }
@@ -59,39 +79,43 @@ void updateControls() {
     handleShortClick();
   }
 
-  // --- LOGIQUE SELON L'ÉTAT ---
   if (currentState == STATE_MENU && deltaEnc != 0) {
     currentKit += deltaEnc;
     if (currentKit > 3) currentKit = 1;
     if (currentKit < 1) currentKit = 3;
   } 
   else if (currentState == STATE_LIVE) {
-    // Utilisation de la nouvelle fonction pour inclure le démarrage immédiat
     if (btn1.fell()) piloterPiste(0);
     if (btn2.fell()) piloterPiste(1);
     if (btn3.fell()) piloterPiste(2);
     if (btn4.fell()) piloterPiste(3);
 
-    if (deltaEnc != 0) {
-      if (liveMode == SELECT_TRACK) {
-        selectedTrackIdx += deltaEnc;
-        if (selectedTrackIdx > 3) selectedTrackIdx = 0;
-        if (selectedTrackIdx < 0) selectedTrackIdx = 3;
-      } else if (liveMode == ADJUST_TRACK_VOLUME) {
-        trackVolumes[selectedTrackIdx] += (deltaEnc * 0.1); 
-        if (trackVolumes[selectedTrackIdx] > 1.0) trackVolumes[selectedTrackIdx] = 1.0;
-        if (trackVolumes[selectedTrackIdx] < 0.0) trackVolumes[selectedTrackIdx] = 0.0;
-      }
+    // --- 1. ACTION DE L'ENCODEUR ROTATIF (Navigation uniquement) ---
+    if (deltaEnc != 0 && liveMode == SELECT_TRACK) {
+      selectedTrackIdx += deltaEnc;
+      if (selectedTrackIdx > 3) selectedTrackIdx = 0;
+      if (selectedTrackIdx < 0) selectedTrackIdx = 3;
+      
+      // Sécurité anti-saut quand on se déplace
+      dspValue = analogRead(PIN_POT_VOL); 
     }
 
-    int pot = analogRead(PIN_POT_DSP);
+    // --- 2. ACTION DU POTENTIOMÈTRE DE VOLUME ---
+    int pot = analogRead(PIN_POT_VOL);
     if (abs(pot - dspValue) > 10) {
       dspValue = pot;
-      showDspPopUp = true;
-      dspPopUpTimer = millis();
-    }
-    if (showDspPopUp && (millis() - dspPopUpTimer > 2000)) {
-      showDspPopUp = false; 
+      
+      if (liveMode == SELECT_TRACK) {
+        // Mode global : on force toutes les pistes au même volume
+        float masterLevel = pot / 1023.0;
+        for (int j = 0; j < 4; j++) {
+          trackVolumes[j] = masterLevel;
+        }
+      } 
+      else if (liveMode == ADJUST_TRACK_VOLUME) {
+        // Mode individuel : le potard modifie UNIQUEMENT la piste ciblée (*v*)
+        trackVolumes[selectedTrackIdx] = pot / 1023.0;
+      }
     }
   }
 }
@@ -107,7 +131,12 @@ void handleShortClick() {
     liveMode = SELECT_TRACK;
   } 
   else if (currentState == STATE_LIVE) {
-    if (liveMode == SELECT_TRACK) liveMode = ADJUST_TRACK_VOLUME;
-    else liveMode = SELECT_TRACK;
+    if (liveMode == SELECT_TRACK) {
+      liveMode = ADJUST_TRACK_VOLUME;
+    } else {
+      liveMode = SELECT_TRACK;
+    }
+    // Synchronise la valeur du potard pour éviter que le volume saute au moment du clic
+    dspValue = analogRead(PIN_POT_VOL); 
   }
 }

@@ -1,25 +1,22 @@
 #include "Config.h"
 
 void drawBootScreen() {
+  u8g2.clearBuffer(); 
   u8g2.setFont(u8g2_font_ncenB14_tr);
-  u8g2.drawStr(5, 30, "GROOVE BOX");
+  u8g2.drawStr(12, 30, "GROOVE BOX");
   
-  // Petite barre de chargement animée par le temps
-  int loadWidth = map(millis(), 0, 2000, 0, 100);
-  if (loadWidth > 100) loadWidth = 100;
+  int progress = ((millis() - bootTimer) * 100) / 3000; 
+  if (progress > 100) progress = 100;
+  
   u8g2.drawFrame(14, 45, 100, 10);
-  u8g2.drawBox(14, 45, loadWidth, 10);
-  
-  if (millis() > 2500) currentState = STATE_MENU;
+  u8g2.drawBox(14, 45, progress, 10);
+  u8g2.sendBuffer(); 
 }
 
 void drawMenuScreen() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  
-  // Titre plus court
   u8g2.drawStr(10, 12, "STYLE :");
 
-  // Textes raccourcis pour respirer sur 128 pixels de large
   if (currentKit == 1) u8g2.drawStr(10, 30, "> Hip-Hop");
   else                 u8g2.drawStr(10, 30, "  Hip-Hop");
 
@@ -31,43 +28,50 @@ void drawMenuScreen() {
 }
 
 void drawLiveScreen() {
-  // 1. DESSIN DES 4 COLONNES (Incredibox style)
+  // --- 1. DESSIN DES 4 PISTES ---
   for (int i = 0; i < 4; i++) {
     int startX = i * 32;
     
-    // Si la piste est sélectionnée par l'encodeur, on met un petit cadre au-dessus
+    // --- LE RETOUR DES MINI-JAUGES INDIVIDUELLES ---
+    int miniBarWidth = trackVolumes[i] * 24; // Mappe de 0.0-1.0 vers 0-24 pixels
+    if (miniBarWidth > 24) miniBarWidth = 24;
+    if (miniBarWidth < 0) miniBarWidth = 0;
+    
+    // On dessine le contour et le remplissage de la mini-jauge
+    u8g2.drawFrame(startX + 4, 8, 24, 5);    
+    u8g2.drawBox(startX + 4, 8, miniBarWidth, 5); 
+    
+    // --- LE CURSEUR DE SÉLECTION ---
     if (i == selectedTrackIdx) {
-      if (liveMode == SELECT_TRACK) u8g2.drawFrame(startX + 4, 0, 24, 6);
-      if (liveMode == ADJUST_TRACK_VOLUME) u8g2.drawBox(startX + 4, 0, 24, 6); // Plein si on règle le volume
+      u8g2.setFont(u8g2_font_4x6_tf); 
+      if (liveMode == SELECT_TRACK) {
+        u8g2.drawStr(startX + 14, 6, "v");   // Simple flèche en navigation
+      } else if (liveMode == ADJUST_TRACK_VOLUME) {
+        u8g2.drawStr(startX + 10, 6, "*v*"); // Flèche encadrée si verrouillé
+      }
     }
 
-    // Le "Personnage" (Pour l'instant un rectangle, tu mettras un Bitmap ici)
+    // --- LE RECTANGLE PRINCIPAL DE LA PISTE (Mute / Unmute) ---
+    // Statique : 40 pixels de haut. Plein si actif, vide si muet.
     if (trackActive[i]) {
-      u8g2.drawBox(startX + 4, 15, 24, 40); // Plein = Unmute
+      u8g2.drawBox(startX + 4, 18, 24, 40);   
     } else {
-      u8g2.drawFrame(startX + 4, 15, 24, 40); // Vide (Contours) = Mute
+      u8g2.drawFrame(startX + 4, 18, 24, 40); 
     }
   }
 
-  // 2. LA LIGNE DE TEMPO QUI BALAYE
-  // Pour le test sans audio, on fait avancer le curseur virtuellement
-  unsigned long timeInLoop = millis() % loopLengthMs; 
-  int lineX = map(timeInLoop, 0, loopLengthMs, 0, 128);
-  u8g2.drawLine(lineX, 0, lineX, 64);
+  // --- 2. BARRE DE PROGRESSION DE LA BOUCLE PERMANENTE ---
+  u8g2.drawFrame(0, 60, 128, 4); // Le cadre extérieur toujours visible
 
-  // 3. LE POP-UP DU FILTRE DSP (S'affiche par-dessus si on tourne le potard)
-  if (showDspPopUp) {
-    u8g2.setDrawColor(0); // On dessine en noir pour effacer le fond
-    u8g2.drawBox(24, 15, 80, 34);
-    u8g2.setDrawColor(1); // On repasse en blanc
-    u8g2.drawFrame(24, 15, 80, 34);
+  if (isRunning) {
+    unsigned long currentLoopStart = nextLoopTime - loopLengthMs;
+    unsigned long timeInLoop = millis() - currentLoopStart; 
     
-    u8g2.setFont(u8g2_font_ncenB08_tr);
-    u8g2.drawStr(30, 28, "FILTRE DSP");
+    if (timeInLoop > loopLengthMs) {
+      timeInLoop = loopLengthMs;
+    }
     
-    // Jauge de 0 à 100%
-    int gaugeWidth = map(dspValue, 0, 1023, 0, 68);
-    u8g2.drawFrame(30, 35, 68, 8);
-    u8g2.drawBox(30, 35, gaugeWidth, 8);
+    int progBarWidth = map(timeInLoop, 0, loopLengthMs, 0, 128);
+    u8g2.drawBox(0, 60, progBarWidth, 4); // Le remplissage rythmique
   }
 }
