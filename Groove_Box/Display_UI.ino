@@ -1,4 +1,5 @@
 #include "Config.h"
+#include "Bitmaps.h" // <-- ON IMPORTE VOS PERSONNAGES ICI !
 
 void drawBootScreen() {
   u8g2.clearBuffer(); 
@@ -32,36 +33,54 @@ void drawLiveScreen() {
   for (int i = 0; i < 4; i++) {
     int startX = i * 32;
     
-    // --- LE RETOUR DES MINI-JAUGES INDIVIDUELLES ---
-    int miniBarWidth = trackVolumes[i] * 24; // Mappe de 0.0-1.0 vers 0-24 pixels
+    // Les mini-jauges individuelles
+    int miniBarWidth = trackVolumes[i] * 24; 
     if (miniBarWidth > 24) miniBarWidth = 24;
     if (miniBarWidth < 0) miniBarWidth = 0;
     
-    // On dessine le contour et le remplissage de la mini-jauge
     u8g2.drawFrame(startX + 4, 8, 24, 5);    
     u8g2.drawBox(startX + 4, 8, miniBarWidth, 5); 
     
-    // --- LE CURSEUR DE SÉLECTION ---
+    // Le curseur de sélection
     if (i == selectedTrackIdx) {
       u8g2.setFont(u8g2_font_4x6_tf); 
       if (liveMode == SELECT_TRACK) {
-        u8g2.drawStr(startX + 14, 6, "v");   // Simple flèche en navigation
+        u8g2.drawStr(startX + 14, 6, "v");   
       } else if (liveMode == ADJUST_TRACK_VOLUME) {
-        u8g2.drawStr(startX + 10, 6, "*v*"); // Flèche encadrée si verrouillé
+        u8g2.drawStr(startX + 10, 6, "*v*"); 
       }
     }
 
-    // --- LE RECTANGLE PRINCIPAL DE LA PISTE (Mute / Unmute) ---
-    // Statique : 40 pixels de haut. Plein si actif, vide si muet.
-    if (trackActive[i]) {
-      u8g2.drawBox(startX + 4, 18, 24, 40);   
-    } else {
-      u8g2.drawFrame(startX + 4, 18, 24, 40); 
+    // --- LE REMPLACEMENT : AFFICHAGE DES AVATARS ---
+    
+    // Renseigne ici la vraie taille de votre dessin exporté depuis Piskel
+    int largeurImage = 24; 
+    int hauteurImage = 40; 
+    
+    // Ajuste yImage si le personnage flotte ou est trop bas
+    int yImage = 16; 
+    
+    // XBMP lit le tableau dans la mémoire PROGMEM
+    if (i == 0) { // Piste 1 (BASS) : Mathys
+      if (trackActive[i]) u8g2.drawXBMP(startX + 4, yImage, largeurImage, hauteurImage, mathys_onNewPiskel_2);
+      else                u8g2.drawXBMP(startX + 4, yImage, largeurImage, hauteurImage, mathys_offNewPiskel_3);
+    }
+    else if (i == 1) { // Piste 2 (LEAD) : Alla
+      if (trackActive[i]) u8g2.drawXBMP(startX + 4, yImage, largeurImage, hauteurImage, Alla_onNewPiskel_4);
+      else                u8g2.drawXBMP(startX + 4, yImage, largeurImage, hauteurImage, Alla_offNewPiskel_5);
+    }
+    else if (i == 2) { // Piste 3 (PERC) : Theo
+      if (trackActive[i]) u8g2.drawXBMP(startX + 4, yImage, largeurImage, hauteurImage, Theo_onNewPiskel_6);
+      else                u8g2.drawXBMP(startX + 4, yImage, largeurImage, hauteurImage, Theo_offNewPiskel_7);
+    }
+    else if (i == 3) { // Piste 4 (BEAT) : Lou
+      if (trackActive[i]) u8g2.drawXBMP(startX + 4, yImage, largeurImage, hauteurImage, Lou_onNewPiskel_8);
+      else                u8g2.drawXBMP(startX + 4, yImage, largeurImage, hauteurImage, Lou_offNewPiskel_9);
     }
   }
 
-  // --- 2. BARRE DE PROGRESSION DE LA BOUCLE PERMANENTE ---
-  u8g2.drawFrame(0, 60, 128, 4); // Le cadre extérieur toujours visible
+  // --- 2. BARRE DE PROGRESSION DE LA BOUCLE ---
+  u8g2.drawFrame(0, 60, 128, 4); 
 
   if (isRunning) {
     unsigned long currentLoopStart = nextLoopTime - loopLengthMs;
@@ -72,6 +91,6 @@ void drawLiveScreen() {
     }
     
     int progBarWidth = map(timeInLoop, 0, loopLengthMs, 0, 128);
-    u8g2.drawBox(0, 60, progBarWidth, 4); // Le remplissage rythmique
+    u8g2.drawBox(0, 60, progBarWidth, 4); 
   }
 }
