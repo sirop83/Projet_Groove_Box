@@ -14,6 +14,7 @@ unsigned long nextLoopTime = 0;
 
 unsigned long dspPopUpTimer = 0;
 bool showDspPopUp = false;
+bool isRunning = false;
 int dspValue = 0;
 
 // Écran I2C
