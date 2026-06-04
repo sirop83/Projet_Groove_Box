@@ -95,8 +95,7 @@ void updateControls() {
       selectedTrackIdx += deltaEnc;
       if (selectedTrackIdx > 3) selectedTrackIdx = 0;
       if (selectedTrackIdx < 0) selectedTrackIdx = 3;
-      
-      // Sécurité anti-saut quand on se déplace
+    
       dspValue = analogRead(PIN_POT_VOL); 
     }
 
@@ -106,16 +105,25 @@ void updateControls() {
       dspValue = pot;
       
       if (liveMode == SELECT_TRACK) {
-        // Mode global : on force toutes les pistes au même volume
         float masterLevel = pot / 1023.0;
         for (int j = 0; j < 4; j++) {
           trackVolumes[j] = masterLevel;
         }
       } 
       else if (liveMode == ADJUST_TRACK_VOLUME) {
-        // Mode individuel : le potard modifie UNIQUEMENT la piste ciblée (*v*)
         trackVolumes[selectedTrackIdx] = pot / 1023.0;
       }
+      }
+    // --- 3. ACTION DU POTENTIOMÈTRE DE FILTRE PASSE-BAS ---
+    int potDsp = analogRead(PIN_POT_DSP);
+    static int lastPotDsp = -1; 
+   
+    if (abs(potDsp - lastPotDsp) > 15) { 
+      lastPotDsp = potDsp;
+      
+      float freq = 40.0 * pow((15000.0 / 40.0), (potDsp / 1023.0));
+      
+      updateFilter(freq);
     }
   }
 }
@@ -137,7 +145,6 @@ void handleShortClick() {
     } else {
       liveMode = SELECT_TRACK;
     }
-    // Synchronise la valeur du potard pour éviter que le volume saute au moment du clic
     dspValue = analogRead(PIN_POT_VOL); 
   }
 }

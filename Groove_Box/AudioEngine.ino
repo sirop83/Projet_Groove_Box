@@ -25,6 +25,7 @@ AudioControlSGTL5000     sgtl5000_1;
 
 void setupAudio() {
   AudioMemory(64); 
+  filter1.resonance(1.5);
   
   sgtl5000_1.enable();
   sgtl5000_1.lineOutLevel(13);
@@ -76,4 +77,8 @@ void playTrack(int i) {
   if (i == 1) playSdWav2.play(fileName);
   if (i == 2) playSdWav3.play(fileName);
   if (i == 3) playSdWav4.play(fileName);
+}
+
+void updateFilter(float freq) {
+  filter1.frequency(freq);
 }
