@@ -24,7 +24,7 @@ AudioControlSGTL5000     sgtl5000_1;
 // GUItool: end automatically generated code
 
 void setupAudio() {
-  AudioMemory(24); 
+  AudioMemory(64); 
   
   sgtl5000_1.enable();
   sgtl5000_1.lineOutLevel(13);
@@ -48,14 +48,14 @@ void runAudioEngine() {
 
   // SÉQUENCEUR
   if (isRunning && millis() >= nextLoopTime) {
-    nextLoopTime = millis() + loopLengthMs; 
-    
+    nextLoopTime = nextLoopTime + loopLengthMs;
+
     if (trackActive[0]) playTrack(0);
     if (trackActive[1]) playTrack(1);
     if (trackActive[2]) playTrack(2);
     if (trackActive[3]) playTrack(3);
   }
-}
+} 
 
 void stopAllAudio() {
   playSdWav1.stop();

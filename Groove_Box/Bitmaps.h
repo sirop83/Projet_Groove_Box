@@ -1,6 +1,7 @@
 #ifndef BITMAPS_H
 #define BITMAPS_H
 
+
 // --- PIXEL ART DE L'ÉQUIPE (Généré via Piskel) ---
 
 // Mathys

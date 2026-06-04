@@ -81,9 +81,9 @@ void updateControls() {
 
   if (currentState == STATE_MENU && deltaEnc != 0) {
     currentKit += deltaEnc;
-    if (currentKit > 3) currentKit = 1;
-    if (currentKit < 1) currentKit = 3;
-  } 
+    if (currentKit > 4) currentKit = 1; // On passe de 4 à 1
+    if (currentKit < 1) currentKit = 4; // On passe de 1 à 4
+  }
   else if (currentState == STATE_LIVE) {
     if (btn1.fell()) piloterPiste(0);
     if (btn2.fell()) piloterPiste(1);
@@ -102,7 +102,7 @@ void updateControls() {
 
     // --- 2. ACTION DU POTENTIOMÈTRE DE VOLUME ---
     int pot = analogRead(PIN_POT_VOL);
-    if (abs(pot - dspValue) > 10) {
+    if (abs(pot - dspValue) > 25) {
       dspValue = pot;
       
       if (liveMode == SELECT_TRACK) {
@@ -125,6 +125,7 @@ void handleShortClick() {
     if (currentKit == 1) currentBPM = 150.0;
     else if (currentKit == 2) currentBPM = 110.0;
     else if (currentKit == 3) currentBPM = 78.0;
+    else if (currentKit == 4) currentBPM = 90.0;
     loopLengthMs = (60000.0 / currentBPM) * 16;
     
     currentState = STATE_LIVE;

@@ -8,7 +8,7 @@ int currentKit = 1;
 float currentBPM = 150.0;
 unsigned long loopLengthMs = (60000.0 / 150.0) * 16;
 bool trackActive[4] = {false, false, false, false};
-float trackVolumes[4] = {1.0, 1.0, 1.0, 1.0};
+float trackVolumes[4] = {0.5, 0.5, 0.5, 0.5};
 int selectedTrackIdx = 0;
 unsigned long nextLoopTime = 0;
 
@@ -45,7 +45,7 @@ void loop() {
   if (currentState == STATE_BOOT) {
     drawBootScreen();
     
-    if (millis() - bootTimer > 3000) { // Si 3 secondes sont passées
+    if (millis() - bootTimer > 1500) { // Si 3 secondes sont passées
       currentState = STATE_MENU;
     }
   } 
