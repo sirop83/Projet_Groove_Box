@@ -3,13 +3,10 @@
 
 void drawBootScreen() {
   u8g2.clearBuffer(); 
-  
-  // CORRECTION : Police compacte de 9x15 pixels (garantit que ça ne dépasse pas)
+
   u8g2.setFont(u8g2_font_9x15_tf);
-  // Centrage parfait : (128 de large - 90 de texte) / 2 = 19
   u8g2.drawStr(19, 30, "GROOVE BOX");
   
-  // Temps de chargement à 1500 ms (1.5 seconde)
   int progress = ((millis() - bootTimer) * 100) / 1500; 
   if (progress > 100) progress = 100;
   
@@ -20,9 +17,9 @@ void drawBootScreen() {
 }
 void drawMenuScreen() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.drawStr(10, 12, "STYLE :");
+  u8g2.drawStr(42, 12, "STYLES :");
 
-  // --- 1. TA LISTE DE KITS COMPLÈTE ---
+  // --- 1. LISTE DE KITS COMPLÈTE ---
   const char* nomDesKits[] = {"Hip-Hop", "Electro", "Lo-Fi", "Chill"};
   int nombreTotalDeKits = 4;
 
@@ -135,5 +132,49 @@ void drawLiveScreen() {
     
     int progBarWidth = map(timeInLoop, 0, loopLengthMs, 0, 128);
     u8g2.drawBox(0, 60, progBarWidth, 4); 
+  }
+}
+
+void drawMainMenu() {
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2.drawStr(12, 20, "MENU PRINCIPAL");
+
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  if (mainMenuSelection == 0) u8g2.drawStr(15, 40, "> STYLES ");
+  else u8g2.drawStr(15, 40, "  STYLES ");
+
+  if (mainMenuSelection == 1) u8g2.drawStr(15, 55, "> INFO ");
+  else u8g2.drawStr(15, 55, "  INFO ");
+}
+
+void drawInfoScreen() {
+  // 1. Le texte à gauche
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2.drawStr(5, 20, "Scannez");
+  u8g2.drawStr(5, 35, "pour lire");
+  u8g2.drawStr(5, 50, "le manuel");
+
+  u8g2.drawBitmap(78, 8, 6, 48, qr_nouveau);
+}
+void drawLongPressPopup() {
+  int cx = 64; // Centre de l'écran (X)
+  int cy = 32; // Centre de l'écran (Y)
+  int r = 14;  // Rayon du cercle
+
+  u8g2.setDrawColor(0);      
+  u8g2.drawDisc(cx, cy, r);  
+  u8g2.setDrawColor(1);      
+
+  // 2. Le contour du cercle (en blanc)
+  u8g2.drawCircle(cx, cy, r);
+
+  int angleMax = map(longPressProgress, 0, 100, 0, 360);
+  
+  for (int a = 0; a <= angleMax; a += 1) { 
+    float radian = a * 3.14159 / 180.0;
+    int endX = cx + (r * sin(radian));
+    int endY = cy - (r * cos(radian)); 
+    
+    u8g2.drawLine(cx, cy, endX, endY);
   }
 }

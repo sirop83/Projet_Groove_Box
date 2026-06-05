@@ -6,8 +6,9 @@
 #include <Encoder.h> // Bibliothèque standard Teensy pour l'encodeur
 
 // --- ÉTATS GLOBAUX ---
-enum MachineState { STATE_BOOT, STATE_MENU, STATE_LIVE };
+enum MachineState { STATE_BOOT, STATE_MAIN_MENU, STATE_MENU, STATE_INFO, STATE_LIVE };
 extern MachineState currentState;
+extern int mainMenuSelection;
 
 // --- SOUS-ÉTATS DU MODE LIVE ---
 enum LiveSubState { SELECT_TRACK, ADJUST_TRACK_VOLUME };
@@ -28,6 +29,7 @@ extern float currentBPM;
 extern unsigned long loopLengthMs;
 extern bool trackActive[4];
 extern float trackVolumes[4]; 
+extern float trackFilters[4];
 extern int selectedTrackIdx;  
 extern unsigned long nextLoopTime;
 
@@ -45,6 +47,10 @@ void playTrack(int i);
 void drawBootScreen();
 void setupControls();
 extern unsigned long bootTimer;
+
+
+extern int longPressProgress;
+void drawLongPressPopup();
 
 void stopAllAudio();
 void resetMachine();
