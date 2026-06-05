@@ -74,6 +74,7 @@ void updateControls() {
         if (currentState == STATE_LIVE) { resetMachine(); currentState = STATE_MENU; }
         else if (currentState == STATE_MENU) currentState = STATE_MAIN_MENU;
         else if (currentState == STATE_INFO) currentState = STATE_MAIN_MENU;
+        else if (currentState == STATE_MIC) currentState = STATE_MAIN_MENU;
       }
     }
   } else {
@@ -88,9 +89,9 @@ void updateControls() {
 
   if (currentState == STATE_MAIN_MENU && deltaEnc != 0) {
     mainMenuSelection += deltaEnc;
-    if (mainMenuSelection > 1) mainMenuSelection = 0;
-    if (mainMenuSelection < 0) mainMenuSelection = 1;
-  }
+    if (mainMenuSelection > 2) mainMenuSelection = 0; 
+    if (mainMenuSelection < 0) mainMenuSelection = 2;
+}
 
   if (currentState == STATE_MENU && deltaEnc != 0) {
     currentKit += deltaEnc;
@@ -141,9 +142,9 @@ void updateControls() {
 void handleShortClick() {
   if (currentState == STATE_MAIN_MENU) {
     if (mainMenuSelection == 0) currentState = STATE_MENU;
-    else if (mainMenuSelection == 1) currentState = STATE_INFO;
+    else if (mainMenuSelection == 1) currentState = STATE_MIC;
+    else if (mainMenuSelection == 2) currentState = STATE_INFO;
   }
-  else if (currentState == STATE_INFO) currentState = STATE_MAIN_MENU;
   else if (currentState == STATE_MENU) {
     if (currentKit == 1) currentBPM = 150.0;
     else if (currentKit == 2) currentBPM = 110.0;

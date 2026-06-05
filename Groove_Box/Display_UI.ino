@@ -134,7 +134,11 @@ void drawLiveScreen() {
     u8g2.drawBox(0, 60, progBarWidth, 4); 
   }
 }
-
+void drawMicScreen() {
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2.drawStr(30, 30, "MODE MICRO");
+  u8g2.drawStr(10, 50, "Appui long: Menu");
+}
 void drawMainMenu() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
   u8g2.drawStr(12, 20, "MENU PRINCIPAL");
@@ -143,8 +147,13 @@ void drawMainMenu() {
   if (mainMenuSelection == 0) u8g2.drawStr(15, 40, "> STYLES ");
   else u8g2.drawStr(15, 40, "  STYLES ");
 
-  if (mainMenuSelection == 1) u8g2.drawStr(15, 55, "> INFO ");
-  else u8g2.drawStr(15, 55, "  INFO ");
+  if (mainMenuSelection == 1) u8g2.drawStr(15, 55, "> MICRO ");
+  else u8g2.drawStr(15, 55, "  MICRO ");
+
+  if (mainMenuSelection == 2) u8g2.drawStr(15, 70, "> INFO ");
+  else u8g2.drawStr(15, 70, "  INFO ");
+
+  
 }
 
 void drawInfoScreen() {

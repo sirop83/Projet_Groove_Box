@@ -89,8 +89,9 @@ void loop() {
         drawInfoScreen();
       } else if (currentState == STATE_LIVE) {
         drawLiveScreen(); 
+      }else if (currentState == STATE_MIC) {
+      drawMicScreen();
       }
-      
       if (longPressProgress > 0) {
         drawLongPressPopup();
       }

@@ -6,7 +6,7 @@
 #include <Encoder.h> // Bibliothèque standard Teensy pour l'encodeur
 
 // --- ÉTATS GLOBAUX ---
-enum MachineState { STATE_BOOT, STATE_MAIN_MENU, STATE_MENU, STATE_INFO, STATE_LIVE };
+enum MachineState { STATE_BOOT, STATE_MAIN_MENU, STATE_MENU, STATE_INFO, STATE_LIVE, STATE_MIC };
 extern MachineState currentState;
 extern int mainMenuSelection;
 

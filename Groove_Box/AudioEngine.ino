@@ -5,7 +5,14 @@
 #include <SD.h>
 #include <SerialFlash.h>
 
+AudioMixer4              mixer1;         
+AudioOutputI2S           i2s1;    
 // GUItool: begin automatically generated code
+AudioInputI2S            audioInput;
+AudioFilterBiquad        filtreVoix; 
+AudioConnection          patchCordMic1(audioInput, 0, filtreVoix, 0); 
+AudioConnection          patchCordMic2(filtreVoix, 0, mixer1, 4);
+
 AudioPlaySdWav           playSdWav1;
 AudioPlaySdWav           playSdWav2;
 AudioPlaySdWav           playSdWav3;
@@ -17,8 +24,7 @@ AudioFilterStateVariable filter2;
 AudioFilterStateVariable filter3;
 AudioFilterStateVariable filter4;
 
-AudioMixer4              mixer1;         
-AudioOutputI2S           i2s1;           
+       
 
 // 1. Les pistes rentrent dans leurs filtres respectifs
 AudioConnection          patchCord1(playSdWav1, 0, filter1, 0);
@@ -40,13 +46,18 @@ AudioControlSGTL5000     sgtl5000_1;
 // GUItool: end automatically generated code
 
 void setupAudio() {
-  AudioMemory(64); 
+  AudioMemory(128); 
   
+  sgtl5000_1.volume(0.8);
+  sgtl5000_1.micGain(60);
+  sgtl5000_1.enable();
+  sgtl5000_1.inputSelect(AUDIO_INPUT_MIC);
   filter1.resonance(1.5);
   filter2.resonance(1.5);
   filter3.resonance(1.5);
   filter4.resonance(1.5);
-  
+  filtreVoix.setHighpass(0, 150, 0.707);
+  filtreVoix.setLowpass(1, 7000, 0.707);
   sgtl5000_1.enable();
   sgtl5000_1.lineOutLevel(13);
   sgtl5000_1.volume(0.6); 
@@ -66,6 +77,7 @@ void runAudioEngine() {
   mixer1.gain(1, trackActive[1] ? trackVolumes[1] : 0.0);
   mixer1.gain(2, trackActive[2] ? trackVolumes[2] : 0.0);
   mixer1.gain(3, trackActive[3] ? trackVolumes[3] : 0.0);
+  mixer1.gain(4, (currentState == STATE_MIC) ? 1.0 : 0.0);
   // SÉQUENCEUR
   if (isRunning && millis() >= nextLoopTime) {
     nextLoopTime = nextLoopTime + loopLengthMs;
