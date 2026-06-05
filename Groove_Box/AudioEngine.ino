@@ -40,7 +40,7 @@ AudioControlSGTL5000     sgtl5000_1;
 // GUItool: end automatically generated code
 
 void setupAudio() {
-  AudioMemory(64); 
+  AudioMemory(128); 
   
   filter1.resonance(1.5);
   filter2.resonance(1.5);

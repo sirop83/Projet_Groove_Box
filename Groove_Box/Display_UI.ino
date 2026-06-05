@@ -137,14 +137,14 @@ void drawLiveScreen() {
 
 void drawMainMenu() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.drawStr(12, 20, "MENU PRINCIPAL");
+  u8g2.drawStr(12, 12, "MENU PRINCIPAL");
 
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  if (mainMenuSelection == 0) u8g2.drawStr(15, 40, "> STYLES ");
-  else u8g2.drawStr(15, 40, "  STYLES ");
+  if (mainMenuSelection == 0) u8g2.drawStr(10, 40, "> STYLES ");
+  else u8g2.drawStr(20, 40, "STYLES ");
 
-  if (mainMenuSelection == 1) u8g2.drawStr(15, 55, "> INFO ");
-  else u8g2.drawStr(15, 55, "  INFO ");
+  if (mainMenuSelection == 1) u8g2.drawStr(10, 55, "> INFO ");
+  else u8g2.drawStr(20, 55, "INFO ");
 }
 
 void drawInfoScreen() {
