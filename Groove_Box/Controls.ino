@@ -89,9 +89,9 @@ void updateControls() {
 
   if (currentState == STATE_MAIN_MENU && deltaEnc != 0) {
     mainMenuSelection += deltaEnc;
-    if (mainMenuSelection > 2) mainMenuSelection = 0; 
+    if (mainMenuSelection > 2) mainMenuSelection = 0;
     if (mainMenuSelection < 0) mainMenuSelection = 2;
-}
+  }
 
   if (currentState == STATE_MENU && deltaEnc != 0) {
     currentKit += deltaEnc;
@@ -108,7 +108,7 @@ void updateControls() {
       selectedTrackIdx += deltaEnc;
       if (selectedTrackIdx > 3) selectedTrackIdx = 0;
       if (selectedTrackIdx < 0) selectedTrackIdx = 3;
-      dspValue = analogRead(PIN_POT_VOL); 
+      dspValue = analogRead(PIN_POT_VOL);
     }
 
     int pot = analogRead(PIN_POT_VOL);
@@ -139,11 +139,18 @@ void updateControls() {
   }
 }
 
+// Dans Controls.ino -> fonction handleShortClick()
 void handleShortClick() {
   if (currentState == STATE_MAIN_MENU) {
-    if (mainMenuSelection == 0) currentState = STATE_MENU;
-    else if (mainMenuSelection == 1) currentState = STATE_MIC;
-    else if (mainMenuSelection == 2) currentState = STATE_INFO;
+    if (mainMenuSelection == 0) {
+      currentState = STATE_MENU;      // 0 = Écran des Styles de musique
+    }
+    else if (mainMenuSelection == 1) {
+      currentState = STATE_MIC;       // 1 = Écran du Micro
+    }
+    else if (mainMenuSelection == 2) {
+      currentState = STATE_INFO;      // 2 = Écran du QR code d'info
+    }
   }
   else if (currentState == STATE_MENU) {
     if (currentKit == 1) currentBPM = 150.0;

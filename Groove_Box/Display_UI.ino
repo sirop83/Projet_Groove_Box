@@ -6,19 +6,17 @@ void drawBootScreen() {
 
   u8g2.setFont(u8g2_font_9x15_tf);
   u8g2.drawStr(19, 30, "GROOVE BOX");
-  
   int progress = ((millis() - bootTimer) * 100) / 1500; 
   if (progress > 100) progress = 100;
-  
   u8g2.drawFrame(14, 45, 100, 10);
   u8g2.drawBox(14, 45, progress, 10);
   
   u8g2.sendBuffer(); 
 }
+
 void drawMenuScreen() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
   u8g2.drawStr(42, 12, "STYLES :");
-
   // --- 1. LISTE DE KITS COMPLÈTE ---
   const char* nomDesKits[] = {"Hip-Hop", "Electro", "Lo-Fi", "Chill"};
   int nombreTotalDeKits = 4;
@@ -38,13 +36,11 @@ void drawMenuScreen() {
 
   // --- 3. LE DESSIN DES 3 LIGNES VISIBLES ---
   for (int i = 0; i < 3; i++) {
-    if (indexDepart + i >= nombreTotalDeKits) break; 
-
+    if (indexDepart + i >= nombreTotalDeKits) break;
     int indexDuKit = indexDepart + i;
-    int yPos = 30 + (i * 15); 
-
+    int yPos = 30 + (i * 15);
     if (currentKit == indexDuKit + 1) {
-      u8g2.drawStr(10, yPos, ">"); 
+      u8g2.drawStr(10, yPos, ">");
     }
     
     u8g2.drawStr(22, yPos, nomDesKits[indexDuKit]);
@@ -52,17 +48,15 @@ void drawMenuScreen() {
 
   // --- 4. LA BARRE DE SCROLL DROITE ---
   if (nombreTotalDeKits > 3) {
-    int trackX = 122; 
+    int trackX = 122;
     int trackY = 22;  
     int trackW = 4;   
     int trackH = 40;  
 
     u8g2.drawFrame(trackX, trackY, trackW, trackH);
-
     int maxIndexDepart = nombreTotalDeKits - 3;
     int hauteurCurseur = (3 * trackH) / nombreTotalDeKits; 
     int espaceLibre = trackH - hauteurCurseur;
-    
     // On calcule la position visuelle du curseur de scroll
     int scrollY = trackY;
     if (maxIndexDepart > 0) {
@@ -77,27 +71,25 @@ void drawLiveScreen() {
   // --- 1. DESSIN DES 4 PISTES ---
   for (int i = 0; i < 4; i++) {
     int startX = i * 32;
-    
     // Les mini-jauges individuelles
     int miniBarWidth = trackVolumes[i] * 24; 
     if (miniBarWidth > 24) miniBarWidth = 24;
     if (miniBarWidth < 0) miniBarWidth = 0;
     
     u8g2.drawFrame(startX + 4, 8, 24, 5);    
-    u8g2.drawBox(startX + 4, 8, miniBarWidth, 5); 
-    
+    u8g2.drawBox(startX + 4, 8, miniBarWidth, 5);
     // Le curseur de sélection
     if (i == selectedTrackIdx) {
-      u8g2.setFont(u8g2_font_4x6_tf); 
+      u8g2.setFont(u8g2_font_4x6_tf);
       if (liveMode == SELECT_TRACK) {
-        u8g2.drawStr(startX + 14, 6, "v");   
+        u8g2.drawStr(startX + 14, 6, "v");
       } else if (liveMode == ADJUST_TRACK_VOLUME) {
-        u8g2.drawStr(startX + 10, 6, "*v*"); 
+        u8g2.drawStr(startX + 10, 6, "*v*");
       }
     }
 
     // --- AFFICHAGE DES AVATARS STATIQUES ---
-    int largeurImage = 24; 
+    int largeurImage = 24;
     int hauteurImage = 40; 
     int yImage = 16; 
     
@@ -120,44 +112,63 @@ void drawLiveScreen() {
   }
 
   // --- 2. BARRE DE PROGRESSION DE LA BOUCLE PERMANENTE ---
-  u8g2.drawFrame(0, 60, 128, 4); 
-
+  u8g2.drawFrame(0, 60, 128, 4);
   if (isRunning) {
     unsigned long currentLoopStart = nextLoopTime - loopLengthMs;
-    unsigned long timeInLoop = millis() - currentLoopStart; 
-    
+    unsigned long timeInLoop = millis() - currentLoopStart;
     if (timeInLoop > loopLengthMs) {
       timeInLoop = loopLengthMs;
     }
     
     int progBarWidth = map(timeInLoop, 0, loopLengthMs, 0, 128);
-    u8g2.drawBox(0, 60, progBarWidth, 4); 
+    u8g2.drawBox(0, 60, progBarWidth, 4);
   }
 }
-void drawMicScreen() {
-  u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.drawStr(30, 30, "MODE MICRO");
-  u8g2.drawStr(10, 50, "Appui long: Menu");
-}
+
 void drawMainMenu() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.drawStr(12, 20, "MENU PRINCIPAL");
+  u8g2.drawStr(12, 12, "MENU PRINCIPAL");
 
-  u8g2.setFont(u8g2_font_ncenB08_tr);
-  if (mainMenuSelection == 0) u8g2.drawStr(15, 40, "> STYLES ");
-  else u8g2.drawStr(15, 40, "  STYLES ");
+  const char* optionsMenu[] = {"Styles", "Micro", "Info"}; 
+  int nombreTotalOptions = 3;
+  static int indexDepartMain = 0;
+  int cursorIndex = mainMenuSelection; 
 
-  if (mainMenuSelection == 1) u8g2.drawStr(15, 55, "> MICRO ");
-  else u8g2.drawStr(15, 55, "  MICRO ");
+  if (cursorIndex < indexDepartMain) {
+    indexDepartMain = cursorIndex;
+  } else if (cursorIndex >= indexDepartMain + 3) {
+    indexDepartMain = cursorIndex - 2;
+  }
 
-  if (mainMenuSelection == 2) u8g2.drawStr(15, 70, "> INFO ");
-  else u8g2.drawStr(15, 70, "  INFO ");
+  for (int i = 0; i < 3; i++) {
+    if (indexDepartMain + i >= nombreTotalOptions) break;
+    int indexOption = indexDepartMain + i;
+    int yPos = 30 + (i * 15);
+    if (mainMenuSelection == indexOption) {
+      u8g2.drawStr(10, yPos, ">");
+    }
+    
+    u8g2.drawStr(22, yPos, optionsMenu[indexOption]);
+  }
 
-  
+  if (nombreTotalOptions > 3) {
+    int trackX = 122; int trackY = 22;
+    int trackW = 4; int trackH = 40;
+    u8g2.drawFrame(trackX, trackY, trackW, trackH);
+    
+    int maxIndexDepart = nombreTotalOptions - 3;
+    int hauteurCurseur = (3 * trackH) / nombreTotalOptions; 
+    int espaceLibre = trackH - hauteurCurseur;
+    
+    int scrollY = trackY;
+    if (maxIndexDepart > 0) {
+      scrollY += (indexDepartMain * espaceLibre) / maxIndexDepart;
+    }
+    u8g2.drawBox(trackX, scrollY, trackW, hauteurCurseur);
+  }
 }
 
 void drawInfoScreen() {
-  // 1. Le texte à gauche
   u8g2.setFont(u8g2_font_ncenB08_tr);
   u8g2.drawStr(5, 20, "Scannez");
   u8g2.drawStr(5, 35, "pour lire");
@@ -165,6 +176,7 @@ void drawInfoScreen() {
 
   u8g2.drawBitmap(78, 8, 6, 48, qr_nouveau);
 }
+
 void drawLongPressPopup() {
   int cx = 64; // Centre de l'écran (X)
   int cy = 32; // Centre de l'écran (Y)
@@ -172,13 +184,11 @@ void drawLongPressPopup() {
 
   u8g2.setDrawColor(0);      
   u8g2.drawDisc(cx, cy, r);  
-  u8g2.setDrawColor(1);      
-
+  u8g2.setDrawColor(1);
   // 2. Le contour du cercle (en blanc)
   u8g2.drawCircle(cx, cy, r);
 
   int angleMax = map(longPressProgress, 0, 100, 0, 360);
-  
   for (int a = 0; a <= angleMax; a += 1) { 
     float radian = a * 3.14159 / 180.0;
     int endX = cx + (r * sin(radian));
@@ -186,4 +196,10 @@ void drawLongPressPopup() {
     
     u8g2.drawLine(cx, cy, endX, endY);
   }
+}
+
+void drawMicScreen() {
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2.drawStr(25, 30, "MODE MICRO");
+  u8g2.drawStr(10, 50, "Cliquer pour retour");
 }

@@ -22,13 +22,12 @@ int dspValue = 0;
 
 unsigned long bootTimer = 0;
 
-// Écran I2C
+// --- MATÉRIEL ---
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
-
-// Encodeur et Bouton
 Encoder myEnc(PIN_ENC_A, PIN_ENC_B);
 Bounce encBtn = Bounce();
-// --- VARIABLES D'INTERRUPTION  ---
+
+// --- VARIABLES D'INTERRUPTION ---
 volatile unsigned long isrPressTime = 0;
 volatile bool isrHasClicked = false;
 volatile bool isrIsPressed = false;
@@ -42,35 +41,31 @@ void encoderBtnISR() {
   } else {
     isrIsPressed = false;
     unsigned long duration = millis() - isrPressTime;
-    if (duration < 350) isrHasClicked = true;
+    if (duration > 5 && duration < 350) isrHasClicked = true;
   }
 }
 
 void setup() {
   Serial.begin(115200);
-  
   delay(500);
-  u8g2.begin();
   
+  u8g2.begin();
   u8g2.setBusClock(400000); 
 
-  setupControls(); 
+  setupControls();
   attachInterrupt(digitalPinToInterrupt(PIN_ENC_BTN), encoderBtnISR, CHANGE);
   setupAudio();
+  
   bootTimer = millis(); 
 }
 
 void loop() {
   updateControls();
   
-  if (isRunning || currentState == STATE_LIVE) {
-    runAudioEngine();
-  }
-
+  runAudioEngine();
   static unsigned long lastDrawTime = 0;
-  if (millis() - lastDrawTime > 33) { //30FPS tah Flight simulator
+  if (millis() - lastDrawTime > 33) { // 30FPS
     lastDrawTime = millis();
-
     if (currentState == STATE_BOOT) {
       drawBootScreen();
       if (millis() - bootTimer > 1500) { 
@@ -79,19 +74,19 @@ void loop() {
     } 
     else {
       u8g2.clearBuffer();
-      
-      // Le grand aiguillage des écrans
+      // --- LE GRAND AIGUILLAGE DES ÉCRANS ---
       if (currentState == STATE_MAIN_MENU) {
         drawMainMenu();
       } else if (currentState == STATE_MENU) {
         drawMenuScreen();
       } else if (currentState == STATE_INFO) {
         drawInfoScreen();
+      } else if (currentState == STATE_MIC) { 
+        drawMicScreen();
       } else if (currentState == STATE_LIVE) {
-        drawLiveScreen(); 
-      }else if (currentState == STATE_MIC) {
-      drawMicScreen();
+        drawLiveScreen();
       }
+      
       if (longPressProgress > 0) {
         drawLongPressPopup();
       }
