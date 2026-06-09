@@ -11,7 +11,6 @@ Bounce btn4 = Bounce();
 
 void setupControls() {
   pinMode(PIN_ENC_BTN, INPUT_PULLUP);
-  // On attache l'interruption matérielle au lieu du Bounce
   attachInterrupt(digitalPinToInterrupt(PIN_ENC_BTN), encoderBtnISR, CHANGE);
   
   pinMode(PIN_B1, INPUT_PULLUP); btn1.attach(PIN_B1); btn1.interval(10);
@@ -95,8 +94,8 @@ void updateControls() {
 
   if (currentState == STATE_MENU && deltaEnc != 0) {
     currentKit += deltaEnc;
-    if (currentKit > 4) currentKit = 1;
-    if (currentKit < 1) currentKit = 4;
+    if (currentKit > 5) currentKit = 1; 
+    if (currentKit < 1) currentKit = 5; 
   }
   else if (currentState == STATE_LIVE) {
     if (btn1.fell()) piloterPiste(0);
@@ -139,17 +138,16 @@ void updateControls() {
   }
 }
 
-// Dans Controls.ino -> fonction handleShortClick()
 void handleShortClick() {
   if (currentState == STATE_MAIN_MENU) {
     if (mainMenuSelection == 0) {
-      currentState = STATE_MENU;      // 0 = Écran des Styles de musique
+      currentState = STATE_MENU;      
     }
     else if (mainMenuSelection == 1) {
-      currentState = STATE_MIC;       // 1 = Écran du Micro
+      currentState = STATE_MIC;       
     }
     else if (mainMenuSelection == 2) {
-      currentState = STATE_INFO;      // 2 = Écran du QR code d'info
+      currentState = STATE_INFO;      
     }
   }
   else if (currentState == STATE_MENU) {
@@ -157,6 +155,8 @@ void handleShortClick() {
     else if (currentKit == 2) currentBPM = 110.0;
     else if (currentKit == 3) currentBPM = 78.0;
     else if (currentKit == 4) currentBPM = 90.0;
+    else if (currentKit == 5) currentBPM = 120.0; 
+    
     loopLengthMs = (60000.0 / currentBPM) * 16;
     currentState = STATE_LIVE;
     liveMode = SELECT_TRACK;

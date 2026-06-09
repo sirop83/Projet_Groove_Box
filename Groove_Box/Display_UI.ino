@@ -17,19 +17,18 @@ void drawBootScreen() {
 void drawMenuScreen() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
   u8g2.drawStr(42, 12, "STYLES :");
+  
   // --- 1. LISTE DE KITS COMPLÈTE ---
-  const char* nomDesKits[] = {"Hip-Hop", "Electro", "Lo-Fi", "Chill"};
-  int nombreTotalDeKits = 4;
+  const char* nomDesKits[] = {"Hip-Hop", "Electro", "Lo-Fi", "Chill", "Orchestre"};
+  int nombreTotalDeKits = 5;
 
   // --- 2. LA CAMÉRA "INTELLIGENTE" (À BUTÉE) ---
-  static int indexDepart = 0; // "static" mémorise la position entre chaque image
-  int cursorIndex = currentKit - 1; // La vraie position de ton encodeur (0 à 3)
+  static int indexDepart = 0; 
+  int cursorIndex = currentKit - 1; 
 
-  // Si le curseur monte au-dessus de la zone visible, la caméra remonte
   if (cursorIndex < indexDepart) {
     indexDepart = cursorIndex;
   }
-  // Si le curseur descend en dessous de la zone visible (les 3 lignes), la caméra descend
   else if (cursorIndex >= indexDepart + 3) {
     indexDepart = cursorIndex - 2;
   }
@@ -57,7 +56,7 @@ void drawMenuScreen() {
     int maxIndexDepart = nombreTotalDeKits - 3;
     int hauteurCurseur = (3 * trackH) / nombreTotalDeKits; 
     int espaceLibre = trackH - hauteurCurseur;
-    // On calcule la position visuelle du curseur de scroll
+    
     int scrollY = trackY;
     if (maxIndexDepart > 0) {
       scrollY += (indexDepart * espaceLibre) / maxIndexDepart;
@@ -71,14 +70,14 @@ void drawLiveScreen() {
   // --- 1. DESSIN DES 4 PISTES ---
   for (int i = 0; i < 4; i++) {
     int startX = i * 32;
-    // Les mini-jauges individuelles
+    
     int miniBarWidth = trackVolumes[i] * 24; 
     if (miniBarWidth > 24) miniBarWidth = 24;
     if (miniBarWidth < 0) miniBarWidth = 0;
     
     u8g2.drawFrame(startX + 4, 8, 24, 5);    
     u8g2.drawBox(startX + 4, 8, miniBarWidth, 5);
-    // Le curseur de sélection
+    
     if (i == selectedTrackIdx) {
       u8g2.setFont(u8g2_font_4x6_tf);
       if (liveMode == SELECT_TRACK) {
@@ -127,7 +126,7 @@ void drawLiveScreen() {
 
 void drawMainMenu() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.drawStr(12, 12, "MENU PRINCIPAL");
+  u8g2.drawStr(12, 20, "MENU PRINCIPAL");
 
   const char* optionsMenu[] = {"Styles", "Micro", "Info"}; 
   int nombreTotalOptions = 3;
@@ -178,14 +177,13 @@ void drawInfoScreen() {
 }
 
 void drawLongPressPopup() {
-  int cx = 64; // Centre de l'écran (X)
-  int cy = 32; // Centre de l'écran (Y)
-  int r = 14;  // Rayon du cercle
+  int cx = 64; 
+  int cy = 32; 
+  int r = 14;  
 
   u8g2.setDrawColor(0);      
   u8g2.drawDisc(cx, cy, r);  
   u8g2.setDrawColor(1);
-  // 2. Le contour du cercle (en blanc)
   u8g2.drawCircle(cx, cy, r);
 
   int angleMax = map(longPressProgress, 0, 100, 0, 360);
