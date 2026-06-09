@@ -6,9 +6,30 @@
 #include <Encoder.h> // Bibliothèque standard Teensy pour l'encodeur
 
 // --- ÉTATS GLOBAUX ---
-enum MachineState { STATE_BOOT, STATE_MAIN_MENU, STATE_MENU, STATE_INFO, STATE_LIVE, STATE_MIC };
+enum MachineState { 
+  STATE_BOOT, STATE_MAIN_MENU, STATE_MENU, STATE_INFO, STATE_LIVE, 
+  STATE_MIC, STATE_MIC_PACK, STATE_MIC_DELETE_CONFIRM,
+  STATE_MIC_RECORD_READY, STATE_MIC_RECORDING, STATE_MIC_RECORD_DONE 
+};
 extern MachineState currentState;
 extern int mainMenuSelection;
+
+// --- VARIABLES DU MICRO ---
+#define MAX_MIC_TRACKS 4      
+extern bool packExists[MAX_MIC_TRACKS];
+extern int micMenuSelection;  
+extern int selectedMicPackIdx;   // <- Retient le pack sélectionné (0 à 3)
+extern int micPackMenuSelection; // <- Position du curseur dans le sous-menu (0 à 2)
+extern int micDeleteConfirmSelection;
+extern int chosenRecordBtn;       // <- Retient le bouton physique choisi (0 à 3)
+extern unsigned long recordTimer; // <- Timer pour la barre de progression
+extern bool isUsingMicPack;       // <- Permet de savoir si on joue vos enregistrements ou les styles d'usine
+extern int activeMicPackIdx;      // <- Retient quel pack personnalisé est actif en lecture
+
+// --- FONCTIONS AUDIO ENREGISTREMENT ---
+void startRecording(const char* filename);
+void continueRecording();
+void stopRecording();
 
 // --- SOUS-ÉTATS DU MODE LIVE ---
 enum LiveSubState { SELECT_TRACK, ADJUST_TRACK_VOLUME };

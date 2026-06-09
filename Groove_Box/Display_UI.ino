@@ -198,6 +198,148 @@ void drawLongPressPopup() {
 
 void drawMicScreen() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.drawStr(25, 30, "MODE MICRO");
-  u8g2.drawStr(10, 50, "Cliquer pour retour");
+  u8g2.drawStr(12, 12, "STUDIO MICRO");
+
+  // 1. On compte combien de packs existent vraiment et on note leur VRAI numéro
+  int activeCount = 0;
+  int activePackIndices[MAX_MIC_TRACKS];
+  for (int i = 0; i < MAX_MIC_TRACKS; i++) {
+    if (packExists[i]) {
+      activePackIndices[activeCount] = i;
+      activeCount++;
+    }
+  }
+
+  // Nombre d'items = (Les packs existants) + (Le bouton Ajouter)
+  int totalItems = activeCount + 1; 
+  
+  static int indexDepartMic = 0;
+  int cursorIndex = micMenuSelection; 
+
+  // --- LA CAMÉRA (Scroll) ---
+  if (cursorIndex < indexDepartMic) {
+    indexDepartMic = cursorIndex;
+  } else if (cursorIndex >= indexDepartMic + 3) {
+    indexDepartMic = cursorIndex - 2;
+  }
+
+  // --- DESSIN DES LIGNES ---
+  for (int i = 0; i < 3; i++) {
+    int indexOption = indexDepartMic + i;
+    if (indexOption >= totalItems) break;
+
+    int yPos = 30 + (i * 15);
+    
+    // Le curseur
+    if (micMenuSelection == indexOption) {
+      u8g2.drawStr(10, yPos, ">");
+    }
+    
+    // Le texte
+    if (indexOption < activeCount) {
+      // C'est un pack existant, on va chercher son vrai numéro en mémoire
+      char buf[20];
+      sprintf(buf, "Pack_%d", activePackIndices[indexOption] + 1); 
+      u8g2.drawStr(22, yPos, buf);
+    } 
+    else {
+      // C'est le bouton Ajouter
+      u8g2.drawStr(22, yPos, "+ Ajouter piste");
+    }
+  }
+
+  // --- BARRE DE SCROLL DROITE ---
+  if (totalItems > 3) {
+    int trackX = 122; int trackY = 22;
+    int trackW = 4; int trackH = 40;
+    u8g2.drawFrame(trackX, trackY, trackW, trackH);
+    
+    int maxIndexDepart = totalItems - 3;
+    int hauteurCurseur = (3 * trackH) / totalItems; 
+    int espaceLibre = trackH - hauteurCurseur;
+    
+    int scrollY = trackY;
+    if (maxIndexDepart > 0) {
+      scrollY += (indexDepartMic * espaceLibre) / maxIndexDepart;
+    }
+    u8g2.drawBox(trackX, scrollY, trackW, hauteurCurseur);
+  }
+}
+
+void drawMicPackScreen() {
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  
+  // En haut de l'écran : le nom du pack où on se trouve actuellement
+  char headerBuf[20];
+  sprintf(headerBuf, "PACK_%d", selectedMicPackIdx + 1);
+  u8g2.drawStr(12, 12, headerBuf);
+
+  // Les 3 options demandées
+  const char* packOptions[] = {"Modifier", "Supprimer", "Lecture"};
+  
+  for (int i = 0; i < 3; i++) {
+    int yPos = 30 + (i * 15);
+    
+    // Le curseur de sélection
+    if (micPackMenuSelection == i) {
+      u8g2.drawStr(10, yPos, ">");
+    }
+    
+    u8g2.drawStr(22, yPos, packOptions[i]);
+  }
+}
+
+void drawMicDeleteConfirmScreen() {
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  
+  // Le message de confirmation dynamique
+  char alertBuf[32];
+  sprintf(alertBuf, "Supprimer PACK_%d ?", selectedMicPackIdx + 1);
+  u8g2.drawStr(5, 20, alertBuf);
+
+  // L'option "Non" (Sélection 0)
+  if (micDeleteConfirmSelection == 0) u8g2.drawStr(30, 40, ">");
+  u8g2.drawStr(42, 40, "Non");
+
+  // L'option "Oui" (Sélection 1)
+  if (micDeleteConfirmSelection == 1) u8g2.drawStr(30, 55, ">");
+  u8g2.drawStr(42, 55, "Oui");
+}
+
+void drawMicRecordReadyScreen() {
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  
+  // J'ai décalé les X vers la gauche (de 10 à 3, et de 22 à 12) 
+  // pour que ça tombe parfaitement au centre de l'écran 128px
+  u8g2.drawStr(3, 25, "Choisissez un bouton");
+  u8g2.drawStr(12, 45, "(B1 a B4) pour REC");
+}
+
+void drawMicRecordingScreen() {
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  
+  // --- NOUVEAUTÉ : Affichage du bouton choisi en haut ---
+  char recTitle[25];
+  sprintf(recTitle, "REC : BOUTON %d", chosenRecordBtn + 1);
+  u8g2.drawStr(20, 15, recTitle); // Centré en haut
+  
+  // Le texte d'action juste au-dessus de la barre
+  u8g2.drawStr(10, 32, "ENREGISTREMENT...");
+
+  // Barre de temps progressive (légèrement descendue à Y=45)
+  u8g2.drawFrame(14, 45, 100, 10);
+  unsigned long elapsed = millis() - recordTimer;
+  if (elapsed > loopLengthMs) elapsed = loopLengthMs;
+  
+  int progWidth = (elapsed * 100) / loopLengthMs;
+  u8g2.drawBox(14, 45, progWidth, 10);
+}
+
+void drawMicRecordDoneScreen() {
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2.drawStr(22, 25, "Enregistrement OK !");
+  
+  char successBuf[30];
+  sprintf(successBuf, "Sauve sur Bouton %d", chosenRecordBtn + 1);
+  u8g2.drawStr(12, 45, successBuf);
 }

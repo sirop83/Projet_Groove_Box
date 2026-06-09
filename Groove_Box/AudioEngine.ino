@@ -23,6 +23,9 @@ AudioMixer4              mixer1;         // Mixeur 1 : Mélange les 4 pistes
 AudioMixer4              mixer2;         // Mixeur 2 : Mélange le Mixer 1 + le Micro
 AudioOutputI2S           i2s1;           // Sortie audio
 
+AudioRecordQueue         recordQueue; // L'outil qui capture le flux micro
+AudioConnection          patchCordRec(filtreVoix, 0, recordQueue, 0); // Connecté après le filtre voix
+
 // --- 2. CÂBLAGE ---
 // Pistes vers Filtres
 AudioConnection          patchCord1(playSdWav1, 0, filter1, 0);
@@ -65,12 +68,29 @@ void setupAudio() {
   
   filtreVoix.setHighpass(0, 150, 0.707);
   filtreVoix.setLowpass(1, 7000, 0.707);
-
+  
   Serial.println("Initialisation de la carte SD...");
   if (!(SD.begin(BUILTIN_SDCARD))) {
     while (1) {
       Serial.println("ERREUR : Carte SD introuvable !");
       delay(1000); 
+    }
+  }
+
+  // --- NOUVEAUTÉ : RECONSTRUCTION AUTOMATIQUE DU MENU AU DÉMARRAGE ---
+  Serial.println("Scan de la carte SD pour restaurer les packs...");
+  for (int p = 0; p < MAX_MIC_TRACKS; p++) {
+    packExists[p] = false; // Par défaut, on l'imagine vide
+    
+    // On vérifie si au moins un des 4 boutons possède un enregistrement
+    for (int b = 1; b <= 4; b++) {
+      char checkName[35];
+      sprintf(checkName, "M_P%d_B%d.WAV", p + 1, b);
+      
+      if (SD.exists(checkName)) {
+        packExists[p] = true; // Un fichier existe ! On active le pack dans le menu
+        break;                // Pas besoin de vérifier les autres boutons de ce pack, on passe au pack suivant
+      }
     }
   }
 }
@@ -101,16 +121,27 @@ void stopAllAudio() {
 }
 
 void playTrack(int i) {
-  char fileName[15]; 
-  if (i == 0) sprintf(fileName, "%d_BASS.WAV", currentKit);
-  if (i == 1) sprintf(fileName, "%d_LEAD.WAV", currentKit);
-  if (i == 2) sprintf(fileName, "%d_PERC.WAV", currentKit);
-  if (i == 3) sprintf(fileName, "%d_BEAT.WAV", currentKit);
+  char fileName[35]; 
+  
+  if (isUsingMicPack) {
+    // Si on lit un pack micro personnalisé
+    sprintf(fileName, "M_P%d_B%d.WAV", activeMicPackIdx + 1, i + 1);
+    if (i == 0) playSdWav1.play(fileName);
+    if (i == 1) playSdWav2.play(fileName);
+    if (i == 2) playSdWav3.play(fileName);
+    if (i == 3) playSdWav4.play(fileName);
+  } else {
+    // Style d'usine classique
+    if (i == 0) sprintf(fileName, "%d_BASS.WAV", currentKit);
+    if (i == 1) sprintf(fileName, "%d_LEAD.WAV", currentKit);
+    if (i == 2) sprintf(fileName, "%d_PERC.WAV", currentKit);
+    if (i == 3) sprintf(fileName, "%d_BEAT.WAV", currentKit);
 
-  if (i == 0) playSdWav1.play(fileName);
-  if (i == 1) playSdWav2.play(fileName);
-  if (i == 2) playSdWav3.play(fileName);
-  if (i == 3) playSdWav4.play(fileName);
+    if (i == 0) playSdWav1.play(fileName);
+    if (i == 1) playSdWav2.play(fileName);
+    if (i == 2) playSdWav3.play(fileName);
+    if (i == 3) playSdWav4.play(fileName);
+  }
 }
 
 void setTrackFilter(int track, float freq) {
@@ -118,4 +149,64 @@ void setTrackFilter(int track, float freq) {
   if (track == 1) filter2.frequency(freq);
   if (track == 2) filter3.frequency(freq);
   if (track == 3) filter4.frequency(freq);
+}
+
+File recFile;
+uint32_t recDataSize = 0;
+
+void startRecording(const char* filename) {
+  if (SD.exists(filename)) {
+    SD.remove(filename); // Supprime l'ancien enregistrement s'il existe
+  }
+  recFile = SD.open(filename, FILE_WRITE);
+  if (recFile) {
+    recDataSize = 0;
+    // Écriture d'un en-tête WAV vide de 44 octets (les tailles seront corrigées à la fin)
+    byte header[44] = {'R','I','F','F',0,0,0,0,'W','A','V','E','f','m','t',' ',16,0,0,0,1,0,1,0,0x44,0xAC,0,0,0x88,0x58,0x01,0,2,0,16,0,'d','a','t','a',0,0,0,0};
+    recFile.write(header, 44);
+    recordQueue.begin(); // Démarre la capture
+  }
+}
+
+void continueRecording() {
+  if (!recFile) return;
+  
+  // LE SECRET EST ICI : "while" au lieu de "if" !
+  // On boucle jusqu'à ce que la file d'attente soit complètement vide.
+  while (recordQueue.available() >= 2) {
+    byte buffer[512];
+    
+    // 1. On attrape le premier paquet de 256 octets
+    memcpy(buffer, recordQueue.readBuffer(), 256);
+    recordQueue.freeBuffer();
+    
+    // 2. On attrape le deuxième paquet et on le colle à la suite
+    memcpy(buffer + 256, recordQueue.readBuffer(), 256);
+    recordQueue.freeBuffer();
+    
+    // 3. On sauvegarde le gros paquet consolidé sur la carte SD
+    recFile.write(buffer, 512);
+    recDataSize += 512;
+  }
+}
+
+void stopRecording() {
+  recordQueue.end(); // Arrête la capture du micro
+  
+  // On vide les derniers petits morceaux de 256 octets qui pourraient rester coincés
+  while (recordQueue.available() > 0) {
+    recFile.write((byte*)recordQueue.readBuffer(), 256);
+    recDataSize += 256;
+    recordQueue.freeBuffer();
+  }
+  
+  if (recFile) {
+    // On met à jour l'en-tête du fichier WAV pour que la taille soit exacte
+    uint32_t fileSize = recDataSize + 36;
+    recFile.seek(4);  
+    recFile.write((byte*)&fileSize, 4);
+    recFile.seek(40); 
+    recFile.write((byte*)&recDataSize, 4);
+    recFile.close();
+  }
 }
