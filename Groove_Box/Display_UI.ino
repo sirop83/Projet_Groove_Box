@@ -126,7 +126,7 @@ void drawLiveScreen() {
 
 void drawMainMenu() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.drawStr(12, 20, "MENU PRINCIPAL");
+  u8g2.drawStr(12, 12, "MENU PRINCIPAL");
 
   const char* optionsMenu[] = {"Styles", "Micro", "Info"}; 
   int nombreTotalOptions = 3;
@@ -239,7 +239,7 @@ void drawMicScreen() {
     if (indexOption < activeCount) {
       // C'est un pack existant, on va chercher son vrai numéro en mémoire
       char buf[20];
-      sprintf(buf, "Pack_%d", activePackIndices[indexOption] + 1); 
+      sprintf(buf, "Pack %d", activePackIndices[indexOption] + 1); 
       u8g2.drawStr(22, yPos, buf);
     } 
     else {
@@ -271,7 +271,7 @@ void drawMicPackScreen() {
   
   // En haut de l'écran : le nom du pack où on se trouve actuellement
   char headerBuf[20];
-  sprintf(headerBuf, "PACK_%d", selectedMicPackIdx + 1);
+  sprintf(headerBuf, "PACK %d", selectedMicPackIdx + 1);
   u8g2.drawStr(12, 12, headerBuf);
 
   // Les 3 options demandées
@@ -294,7 +294,7 @@ void drawMicDeleteConfirmScreen() {
   
   // Le message de confirmation dynamique
   char alertBuf[32];
-  sprintf(alertBuf, "Supprimer PACK_%d ?", selectedMicPackIdx + 1);
+  sprintf(alertBuf, "Supprimer PACK %d ?", selectedMicPackIdx + 1);
   u8g2.drawStr(5, 20, alertBuf);
 
   // L'option "Non" (Sélection 0)
@@ -309,8 +309,7 @@ void drawMicDeleteConfirmScreen() {
 void drawMicRecordReadyScreen() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
   
-  // J'ai décalé les X vers la gauche (de 10 à 3, et de 22 à 12) 
-  // pour que ça tombe parfaitement au centre de l'écran 128px
+  // Parfaitement centré 
   u8g2.drawStr(3, 25, "Choisissez un bouton");
   u8g2.drawStr(12, 45, "(B1 a B4) pour REC");
 }
@@ -318,15 +317,13 @@ void drawMicRecordReadyScreen() {
 void drawMicRecordingScreen() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
   
-  // --- NOUVEAUTÉ : Affichage du bouton choisi en haut ---
   char recTitle[25];
   sprintf(recTitle, "REC : BOUTON %d", chosenRecordBtn + 1);
-  u8g2.drawStr(20, 15, recTitle); // Centré en haut
+  u8g2.drawStr(18, 15, recTitle); // Décalé à 18 pour être bien au centre
   
-  // Le texte d'action juste au-dessus de la barre
-  u8g2.drawStr(10, 32, "ENREGISTREMENT...");
+  // "ENREGISTREMENT..." est un mot long, on le recule à X = 6
+  u8g2.drawStr(6, 32, "ENREGISTREMENT...");
 
-  // Barre de temps progressive (légèrement descendue à Y=45)
   u8g2.drawFrame(14, 45, 100, 10);
   unsigned long elapsed = millis() - recordTimer;
   if (elapsed > loopLengthMs) elapsed = loopLengthMs;
@@ -337,9 +334,12 @@ void drawMicRecordingScreen() {
 
 void drawMicRecordDoneScreen() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.drawStr(22, 25, "Enregistrement OK !");
+  
+  // "Enregistrement OK !" fait presque toute la largeur, on le met à X = 8
+  u8g2.drawStr(8, 25, "Enregistrement OK !");
   
   char successBuf[30];
   sprintf(successBuf, "Sauve sur Bouton %d", chosenRecordBtn + 1);
-  u8g2.drawStr(12, 45, successBuf);
+  // "Sauve sur Bouton X" est un peu plus court, on le met à X = 14
+  u8g2.drawStr(14, 45, successBuf);
 }

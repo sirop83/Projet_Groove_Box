@@ -64,7 +64,7 @@ void setupAudio() {
   mixer2.gain(1, 0.0);
   sgtl5000_1.volume(0.6);
   sgtl5000_1.inputSelect(AUDIO_INPUT_MIC); // Active le micro
-  sgtl5000_1.micGain(15);                  // Gain du micro
+  sgtl5000_1.micGain(30);                  // Gain du micro
   
   filtreVoix.setHighpass(0, 150, 0.707);
   filtreVoix.setLowpass(1, 7000, 0.707);
@@ -104,7 +104,8 @@ void runAudioEngine() {
 
   // Volume du micro sur mixer2
   mixer2.gain(0, 1.0); // On laisse toujours passer la musique
-  mixer2.gain(1, (currentState == STATE_MIC) ? 3.0 : 0.0); // Le micro s'allume que dans STATE_MIC
+  // mixer2.gain(1, (currentState == STATE_MIC) ? 3.0 : 0.0); // Le micro s'allume que dans STATE_MIC
+  mixer2.gain(1, 0.0);
 
   // SÉQUENCEUR
   if (isRunning && millis() >= nextLoopTime) {
