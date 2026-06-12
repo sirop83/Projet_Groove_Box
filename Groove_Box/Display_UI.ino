@@ -19,8 +19,8 @@ void drawMenuScreen() {
   u8g2.drawStr(42, 12, "STYLES :");
   
   // --- 1. LISTE DE KITS COMPLÈTE ---
-  const char* nomDesKits[] = {"Hip-Hop", "Electro", "Lo-Fi", "Chill", "Orchestre"};
-  int nombreTotalDeKits = 5;
+  const char* nomDesKits[] = {"Hip-Hop", "Electro", "Lo-Fi", "Chill", "Orchestre", "Horreur"};
+  int nombreTotalDeKits = 6;
 
   // --- 2. LA CAMÉRA "INTELLIGENTE" (À BUTÉE) ---
   static int indexDepart = 0; 
@@ -65,25 +65,40 @@ void drawMenuScreen() {
     u8g2.drawBox(trackX, scrollY, trackW, hauteurCurseur);
   }
 }
-
 void drawLiveScreen() {
   // --- 1. DESSIN DES 4 PISTES ---
   for (int i = 0; i < 4; i++) {
     int startX = i * 32;
-    
     int miniBarWidth = trackVolumes[i] * 24; 
     if (miniBarWidth > 24) miniBarWidth = 24;
     if (miniBarWidth < 0) miniBarWidth = 0;
-    
     u8g2.drawFrame(startX + 4, 8, 24, 5);    
     u8g2.drawBox(startX + 4, 8, miniBarWidth, 5);
-    
+
+    // --- TEXTE AU-DESSUS DE CHAQUE AVATAR (BOUTON & CURSEUR) ---
+    u8g2.setFont(u8g2_font_4x6_tf);
+    char cursorBuf[20];
+
     if (i == selectedTrackIdx) {
-      u8g2.setFont(u8g2_font_4x6_tf);
-      if (liveMode == SELECT_TRACK) {
-        u8g2.drawStr(startX + 14, 6, "v");
-      } else if (liveMode == ADJUST_TRACK_VOLUME) {
-        u8g2.drawStr(startX + 10, 6, "*v*");
+      if (trackActive[i]) {
+        if (liveMode == SELECT_TRACK) {
+          sprintf(cursorBuf, "B%d v", trackSound[i] + 1);
+          u8g2.drawStr(startX + 8, 6, cursorBuf);
+        } else if (liveMode == ADJUST_TRACK_VOLUME) {
+          sprintf(cursorBuf, "B%d *v*", trackSound[i] + 1);
+          u8g2.drawStr(startX + 4, 6, cursorBuf);
+        }
+      } else {
+        if (liveMode == SELECT_TRACK) {
+          u8g2.drawStr(startX + 14, 6, "v");
+        } else if (liveMode == ADJUST_TRACK_VOLUME) {
+          u8g2.drawStr(startX + 10, 6, "*v*");
+        }
+      }
+    } else {
+      if (trackActive[i]) {
+        sprintf(cursorBuf, "B%d", trackSound[i] + 1);
+        u8g2.drawStr(startX + 12, 6, cursorBuf);
       }
     }
 
@@ -123,7 +138,6 @@ void drawLiveScreen() {
     u8g2.drawBox(0, 60, progBarWidth, 4);
   }
 }
-
 void drawMainMenu() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
   u8g2.drawStr(12, 12, "MENU PRINCIPAL");
@@ -308,22 +322,22 @@ void drawMicDeleteConfirmScreen() {
 
 void drawMicRecordReadyScreen() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  
-  // Parfaitement centré 
   u8g2.drawStr(3, 25, "Choisissez un bouton");
-  u8g2.drawStr(12, 45, "(B1 a B4) pour REC");
+  u8g2.drawStr(12, 45, "(B1 a B8) pour REC"); 
 }
 
 void drawMicRecordingScreen() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
   
+  // --- NOUVEAUTÉ : Affichage du bouton choisi en haut ---
   char recTitle[25];
   sprintf(recTitle, "REC : BOUTON %d", chosenRecordBtn + 1);
-  u8g2.drawStr(18, 15, recTitle); // Décalé à 18 pour être bien au centre
+  u8g2.drawStr(20, 15, recTitle); // Centré en haut
   
-  // "ENREGISTREMENT..." est un mot long, on le recule à X = 6
-  u8g2.drawStr(6, 32, "ENREGISTREMENT...");
+  // Le texte d'action juste au-dessus de la barre
+  u8g2.drawStr(10, 32, "ENREGISTREMENT...");
 
+  // Barre de temps progressive (légèrement descendue à Y=45)
   u8g2.drawFrame(14, 45, 100, 10);
   unsigned long elapsed = millis() - recordTimer;
   if (elapsed > loopLengthMs) elapsed = loopLengthMs;
@@ -334,12 +348,9 @@ void drawMicRecordingScreen() {
 
 void drawMicRecordDoneScreen() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  
-  // "Enregistrement OK !" fait presque toute la largeur, on le met à X = 8
-  u8g2.drawStr(8, 25, "Enregistrement OK !");
+  u8g2.drawStr(22, 25, "Enregistrement OK !");
   
   char successBuf[30];
   sprintf(successBuf, "Sauve sur Bouton %d", chosenRecordBtn + 1);
-  // "Sauve sur Bouton X" est un peu plus court, on le met à X = 14
-  u8g2.drawStr(14, 45, successBuf);
+  u8g2.drawStr(12, 45, successBuf);
 }

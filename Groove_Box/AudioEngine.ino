@@ -83,7 +83,7 @@ void setupAudio() {
     packExists[p] = false; // Par défaut, on l'imagine vide
     
     // On vérifie si au moins un des 4 boutons possède un enregistrement
-    for (int b = 1; b <= 4; b++) {
+    for (int b = 1; b <= 8; b++) {
       char checkName[35];
       sprintf(checkName, "M_P%d_B%d.WAV", p + 1, b);
       
@@ -123,20 +123,25 @@ void stopAllAudio() {
 
 void playTrack(int i) {
   char fileName[35]; 
+  int snd = trackSound[i]; // <- On regarde quel son est affecté à ce perso !
   
   if (isUsingMicPack) {
     // Si on lit un pack micro personnalisé
-    sprintf(fileName, "M_P%d_B%d.WAV", activeMicPackIdx + 1, i + 1);
+    sprintf(fileName, "M_P%d_B%d.WAV", activeMicPackIdx + 1, snd + 1);
     if (i == 0) playSdWav1.play(fileName);
     if (i == 1) playSdWav2.play(fileName);
     if (i == 2) playSdWav3.play(fileName);
     if (i == 3) playSdWav4.play(fileName);
   } else {
-    // Style d'usine classique
-    if (i == 0) sprintf(fileName, "%d_BASS.WAV", currentKit);
-    if (i == 1) sprintf(fileName, "%d_LEAD.WAV", currentKit);
-    if (i == 2) sprintf(fileName, "%d_PERC.WAV", currentKit);
-    if (i == 3) sprintf(fileName, "%d_BEAT.WAV", currentKit);
+    // Style d'usine classique (Sons originaux + Nouveaux sons Personnages)
+    if (snd == 0) sprintf(fileName, "%d_BASS.WAV", currentKit);
+    if (snd == 1) sprintf(fileName, "%d_LEAD.WAV", currentKit);
+    if (snd == 2) sprintf(fileName, "%d_PERC.WAV", currentKit);
+    if (snd == 3) sprintf(fileName, "%d_BEAT.WAV", currentKit);
+    if (snd == 4) sprintf(fileName, "%d_MATHYS.WAV", currentKit); // Bouton 5
+    if (snd == 5) sprintf(fileName, "%d_LOU.WAV", currentKit);    // Bouton 6
+    if (snd == 6) sprintf(fileName, "%d_THEO.WAV", currentKit);   // Bouton 7
+    if (snd == 7) sprintf(fileName, "%d_ALLA.WAV", currentKit);   // Bouton 8
 
     if (i == 0) playSdWav1.play(fileName);
     if (i == 1) playSdWav2.play(fileName);

@@ -32,12 +32,16 @@ void continueRecording();
 void stopRecording();
 
 // --- SOUS-ÉTATS DU MODE LIVE ---
-enum LiveSubState { SELECT_TRACK, ADJUST_TRACK_VOLUME };
+enum LiveSubState { SELECT_TRACK, ADJUST_TRACK_VOLUME};
 extern LiveSubState liveMode;
 
 // --- PINS (À adapter selon le câblage) ---
 const int PIN_B1 = 30; const int PIN_B2 = 28;
 const int PIN_B3 = 26; const int PIN_B4 = 24;
+
+const int PIN_B5 = 25; const int PIN_B6 = 29;
+const int PIN_B7 = 31; const int PIN_B8 = 32;
+
 const int PIN_POT_DSP = 14;  
 const int PIN_POT_VOL = 16;  
 const int PIN_ENC_A = 37;     
@@ -51,6 +55,7 @@ extern unsigned long loopLengthMs;
 extern bool trackActive[4];
 extern float trackVolumes[4]; 
 extern float trackFilters[4];
+extern int trackSound[4];
 extern int selectedTrackIdx;  
 extern unsigned long nextLoopTime;
 
