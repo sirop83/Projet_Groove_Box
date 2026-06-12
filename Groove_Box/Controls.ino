@@ -64,6 +64,24 @@ void piloterPiste(int i) {
   }
 }
 
+void gererBoutonSon(int numSon) {
+  for (int i = 0; i < 4; i++) {
+    if (trackActive[i] && trackSound[i] == numSon) {
+      piloterPiste(i); 
+      return; // On a fini
+    }
+  }
+  
+  for (int i = 0; i < 4; i++) {
+    if (!trackActive[i]) {
+      trackSound[i] = numSon;
+      piloterPiste(i);       
+      return; 
+    }
+  }
+  
+}
+
 void updateControls() {
   btn1.update(); btn2.update(); btn3.update(); btn4.update();
   btn5.update(); btn6.update(); btn7.update(); btn8.update();
@@ -181,26 +199,14 @@ void updateControls() {
     if (currentKit < 1) currentKit = 5; 
   }
   else if (currentState == STATE_LIVE) {
-    if (liveMode == ASSIGN_SOUND) {
-      if (btn1.fell()) trackSound[selectedTrackIdx] = 0;
-      if (btn2.fell()) trackSound[selectedTrackIdx] = 1;
-      if (btn3.fell()) trackSound[selectedTrackIdx] = 2;
-      if (btn4.fell()) trackSound[selectedTrackIdx] = 3;
-      if (btn5.fell()) trackSound[selectedTrackIdx] = 4;
-      if (btn6.fell()) trackSound[selectedTrackIdx] = 5;
-      if (btn7.fell()) trackSound[selectedTrackIdx] = 6;
-      if (btn8.fell()) trackSound[selectedTrackIdx] = 7;
-    } 
-    else {
-      if (btn1.fell()) { for (int i = 0; i < 4; i++) if (trackSound[i] == 0) piloterPiste(i); }
-      if (btn2.fell()) { for (int i = 0; i < 4; i++) if (trackSound[i] == 1) piloterPiste(i); }
-      if (btn3.fell()) { for (int i = 0; i < 4; i++) if (trackSound[i] == 2) piloterPiste(i); }
-      if (btn4.fell()) { for (int i = 0; i < 4; i++) if (trackSound[i] == 3) piloterPiste(i); }
-      if (btn5.fell()) { for (int i = 0; i < 4; i++) if (trackSound[i] == 4) piloterPiste(i); }
-      if (btn6.fell()) { for (int i = 0; i < 4; i++) if (trackSound[i] == 5) piloterPiste(i); }
-      if (btn7.fell()) { for (int i = 0; i < 4; i++) if (trackSound[i] == 6) piloterPiste(i); }
-      if (btn8.fell()) { for (int i = 0; i < 4; i++) if (trackSound[i] == 7) piloterPiste(i); }
-    }
+    if (btn1.fell()) gererBoutonSon(0);
+    if (btn2.fell()) gererBoutonSon(1);
+    if (btn3.fell()) gererBoutonSon(2);
+    if (btn4.fell()) gererBoutonSon(3);
+    if (btn5.fell()) gererBoutonSon(4);
+    if (btn6.fell()) gererBoutonSon(5);
+    if (btn7.fell()) gererBoutonSon(6);
+    if (btn8.fell()) gererBoutonSon(7);
 
     if (deltaEnc != 0 && liveMode == SELECT_TRACK) {
       selectedTrackIdx += deltaEnc;
@@ -263,9 +269,9 @@ void handleShortClick() {
   } 
   else if (currentState == STATE_LIVE) {
     if (liveMode == SELECT_TRACK) liveMode = ADJUST_TRACK_VOLUME;
-    else if (liveMode == ADJUST_TRACK_VOLUME) liveMode = ASSIGN_SOUND;
-    else liveMode = SELECT_TRACK;
-    dspValue = analogRead(PIN_POT_VOL); 
+    else liveMode = SELECT_TRACK; 
+    
+    dspValue = analogRead(PIN_POT_VOL);
   }
   else if (currentState == STATE_MIC) {
     // On refait le repérage des vrais index

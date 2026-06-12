@@ -65,39 +65,41 @@ void drawMenuScreen() {
     u8g2.drawBox(trackX, scrollY, trackW, hauteurCurseur);
   }
 }
-
 void drawLiveScreen() {
   // --- 1. DESSIN DES 4 PISTES ---
   for (int i = 0; i < 4; i++) {
     int startX = i * 32;
-    
     int miniBarWidth = trackVolumes[i] * 24; 
     if (miniBarWidth > 24) miniBarWidth = 24;
     if (miniBarWidth < 0) miniBarWidth = 0;
-    
     u8g2.drawFrame(startX + 4, 8, 24, 5);    
     u8g2.drawBox(startX + 4, 8, miniBarWidth, 5);
-    
+
+    // --- TEXTE AU-DESSUS DE CHAQUE AVATAR (BOUTON & CURSEUR) ---
+    u8g2.setFont(u8g2_font_4x6_tf);
+    char cursorBuf[20];
+
     if (i == selectedTrackIdx) {
-      u8g2.setFont(u8g2_font_4x6_tf);
-      char cursorBuf[20];
-      if (liveMode == SELECT_TRACK) {
-        sprintf(cursorBuf, "S%d v", trackSound[i] + 1);
-        u8g2.drawStr(startX + 8, 6, cursorBuf);
-      } else if (liveMode == ADJUST_TRACK_VOLUME) {
-        sprintf(cursorBuf, "S%d *v*", trackSound[i] + 1);
-        u8g2.drawStr(startX + 4, 6, cursorBuf);
-      } else if (liveMode == ASSIGN_SOUND) {
-        // Mode assignation : on affiche le point d'interrogation
-        sprintf(cursorBuf, "S%d ?", trackSound[i] + 1);
-        u8g2.drawStr(startX + 6, 6, cursorBuf);
+      if (trackActive[i]) {
+        if (liveMode == SELECT_TRACK) {
+          sprintf(cursorBuf, "B%d v", trackSound[i] + 1);
+          u8g2.drawStr(startX + 8, 6, cursorBuf);
+        } else if (liveMode == ADJUST_TRACK_VOLUME) {
+          sprintf(cursorBuf, "B%d *v*", trackSound[i] + 1);
+          u8g2.drawStr(startX + 4, 6, cursorBuf);
+        }
+      } else {
+        if (liveMode == SELECT_TRACK) {
+          u8g2.drawStr(startX + 14, 6, "v");
+        } else if (liveMode == ADJUST_TRACK_VOLUME) {
+          u8g2.drawStr(startX + 10, 6, "*v*");
+        }
       }
     } else {
-      // Pour les persos non sélectionnés, on affiche juste leur numéro de son
-      u8g2.setFont(u8g2_font_4x6_tf);
-      char smallBuf[15];
-      sprintf(smallBuf, "S%d", trackSound[i] + 1);
-      u8g2.drawStr(startX + 12, 6, smallBuf);
+      if (trackActive[i]) {
+        sprintf(cursorBuf, "B%d", trackSound[i] + 1);
+        u8g2.drawStr(startX + 12, 6, cursorBuf);
+      }
     }
 
     // --- AFFICHAGE DES AVATARS STATIQUES ---
@@ -136,7 +138,6 @@ void drawLiveScreen() {
     u8g2.drawBox(0, 60, progBarWidth, 4);
   }
 }
-
 void drawMainMenu() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
   u8g2.drawStr(12, 12, "MENU PRINCIPAL");

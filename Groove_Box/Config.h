@@ -32,7 +32,7 @@ void continueRecording();
 void stopRecording();
 
 // --- SOUS-ÉTATS DU MODE LIVE ---
-enum LiveSubState { SELECT_TRACK, ADJUST_TRACK_VOLUME, ASSIGN_SOUND};
+enum LiveSubState { SELECT_TRACK, ADJUST_TRACK_VOLUME};
 extern LiveSubState liveMode;
 
 // --- PINS (À adapter selon le câblage) ---
