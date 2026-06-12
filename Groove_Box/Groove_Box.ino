@@ -10,6 +10,7 @@ unsigned long loopLengthMs = (60000.0 / 150.0) * 16;
 bool trackActive[4] = {false, false, false, false};
 float trackVolumes[4] = {0.5, 0.5, 0.5, 0.5};
 float trackFilters[4] = {15000.0, 15000.0, 15000.0, 15000.0};
+int trackSound[4] = {0, 1, 2, 3};
 int selectedTrackIdx = 0;
 unsigned long nextLoopTime = 0;
 int mainMenuSelection = 0;

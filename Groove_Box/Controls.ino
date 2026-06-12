@@ -8,6 +8,10 @@ Bounce btn1 = Bounce();
 Bounce btn2 = Bounce();
 Bounce btn3 = Bounce(); 
 Bounce btn4 = Bounce();
+Bounce btn5 = Bounce();
+Bounce btn6 = Bounce(); 
+Bounce btn7 = Bounce(); 
+Bounce btn8 = Bounce();
 
 void setupControls() {
   pinMode(PIN_ENC_BTN, INPUT_PULLUP);
@@ -17,6 +21,11 @@ void setupControls() {
   pinMode(PIN_B2, INPUT_PULLUP); btn2.attach(PIN_B2); btn2.interval(10);
   pinMode(PIN_B3, INPUT_PULLUP); btn3.attach(PIN_B3); btn3.interval(10);
   pinMode(PIN_B4, INPUT_PULLUP); btn4.attach(PIN_B4); btn4.interval(10);
+  
+  pinMode(PIN_B5, INPUT_PULLUP); btn5.attach(PIN_B5); btn5.interval(10);
+  pinMode(PIN_B6, INPUT_PULLUP); btn6.attach(PIN_B6); btn6.interval(10);
+  pinMode(PIN_B7, INPUT_PULLUP); btn7.attach(PIN_B7); btn7.interval(10);
+  pinMode(PIN_B8, INPUT_PULLUP); btn8.attach(PIN_B8); btn8.interval(10);
 
   dspValue = analogRead(PIN_POT_VOL); 
 }
@@ -30,6 +39,7 @@ void resetMachine() {
     trackActive[i] = false;
     trackVolumes[i] = 0.5; 
     trackFilters[i] = 15000.0;
+    trackSound[i] = i;
   }
   stopAllAudio();
 }
@@ -56,6 +66,7 @@ void piloterPiste(int i) {
 
 void updateControls() {
   btn1.update(); btn2.update(); btn3.update(); btn4.update();
+  btn5.update(); btn6.update(); btn7.update(); btn8.update();
 
   // Détection des boutons physiques pour l'enregistrement
   if (currentState == STATE_MIC_RECORD_READY) {
@@ -64,6 +75,10 @@ void updateControls() {
     if (btn2.fell()) inputBtn = 1;
     if (btn3.fell()) inputBtn = 2;
     if (btn4.fell()) inputBtn = 3;
+    if (btn5.fell()) inputBtn = 4; 
+    if (btn6.fell()) inputBtn = 5; 
+    if (btn7.fell()) inputBtn = 6; 
+    if (btn8.fell()) inputBtn = 7;
     
     if (inputBtn != -1) {
       chosenRecordBtn = inputBtn;
@@ -166,10 +181,26 @@ void updateControls() {
     if (currentKit < 1) currentKit = 5; 
   }
   else if (currentState == STATE_LIVE) {
-    if (btn1.fell()) piloterPiste(0);
-    if (btn2.fell()) piloterPiste(1);
-    if (btn3.fell()) piloterPiste(2);
-    if (btn4.fell()) piloterPiste(3);
+    if (liveMode == ASSIGN_SOUND) {
+      if (btn1.fell()) trackSound[selectedTrackIdx] = 0;
+      if (btn2.fell()) trackSound[selectedTrackIdx] = 1;
+      if (btn3.fell()) trackSound[selectedTrackIdx] = 2;
+      if (btn4.fell()) trackSound[selectedTrackIdx] = 3;
+      if (btn5.fell()) trackSound[selectedTrackIdx] = 4;
+      if (btn6.fell()) trackSound[selectedTrackIdx] = 5;
+      if (btn7.fell()) trackSound[selectedTrackIdx] = 6;
+      if (btn8.fell()) trackSound[selectedTrackIdx] = 7;
+    } 
+    else {
+      if (btn1.fell()) { for (int i = 0; i < 4; i++) if (trackSound[i] == 0) piloterPiste(i); }
+      if (btn2.fell()) { for (int i = 0; i < 4; i++) if (trackSound[i] == 1) piloterPiste(i); }
+      if (btn3.fell()) { for (int i = 0; i < 4; i++) if (trackSound[i] == 2) piloterPiste(i); }
+      if (btn4.fell()) { for (int i = 0; i < 4; i++) if (trackSound[i] == 3) piloterPiste(i); }
+      if (btn5.fell()) { for (int i = 0; i < 4; i++) if (trackSound[i] == 4) piloterPiste(i); }
+      if (btn6.fell()) { for (int i = 0; i < 4; i++) if (trackSound[i] == 5) piloterPiste(i); }
+      if (btn7.fell()) { for (int i = 0; i < 4; i++) if (trackSound[i] == 6) piloterPiste(i); }
+      if (btn8.fell()) { for (int i = 0; i < 4; i++) if (trackSound[i] == 7) piloterPiste(i); }
+    }
 
     if (deltaEnc != 0 && liveMode == SELECT_TRACK) {
       selectedTrackIdx += deltaEnc;
@@ -232,6 +263,7 @@ void handleShortClick() {
   } 
   else if (currentState == STATE_LIVE) {
     if (liveMode == SELECT_TRACK) liveMode = ADJUST_TRACK_VOLUME;
+    else if (liveMode == ADJUST_TRACK_VOLUME) liveMode = ASSIGN_SOUND;
     else liveMode = SELECT_TRACK;
     dspValue = analogRead(PIN_POT_VOL); 
   }
@@ -289,7 +321,7 @@ void handleShortClick() {
       
       // 1. Suppression physique des 4 fichiers audio potentiels sur la carte SD
       char fileToDelete[35];
-      for (int btn = 1; btn <= 4; btn++) {
+      for (int btn = 1; btn <= 8; btn++) {
         // On recrée le nom exact du fichier pour ce pack et ce bouton
         sprintf(fileToDelete, "M_P%d_B%d.WAV", selectedMicPackIdx + 1, btn);
         
