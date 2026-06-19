@@ -195,8 +195,8 @@ void updateControls() {
 
   if (currentState == STATE_MENU && deltaEnc != 0) {
     currentKit += deltaEnc;
-    if (currentKit > 6) currentKit = 1; 
-    if (currentKit < 1) currentKit = 6; 
+    if (currentKit > 7) currentKit = 1; 
+    if (currentKit < 1) currentKit = 7; 
   }
   else if (currentState == STATE_LIVE) {
     if (btn1.fell()) gererBoutonSon(0);
@@ -256,23 +256,27 @@ void handleShortClick() {
     }
   }
   else if (currentState == STATE_MENU) {
-    isUsingMicPack = false;
-    if (currentKit == 1) currentBPM = 150.0;
-    else if (currentKit == 2) currentBPM = 110.0;
-    else if (currentKit == 3) currentBPM = 78.0;
-    else if (currentKit == 4) currentBPM = 90.0;
-    else if (currentKit == 5) currentBPM = 120.0;
-    else if (currentKit == 6) currentBPM = 80.0;
+    isUsingMicPack = false; 
     
-    loopLengthMs = (60000.0 / currentBPM) * 16;
+    // NOUVEAU : On crée une variable pour le nombre de temps (16 par défaut)
+    int nombreDeTemps = 16; 
+
+    if (currentKit == 1) currentBPM = 150.0; 
+    else if (currentKit == 2) currentBPM = 110.0; 
+    else if (currentKit == 3) currentBPM = 78.0; 
+    else if (currentKit == 4) currentBPM = 90.0; 
+    else if (currentKit == 5) currentBPM = 120.0; 
+    else if (currentKit == 6) currentBPM = 80.0;
+    else if (currentKit == 7) {
+      currentBPM = 100.0; // Le BPM de ton style numéro 7 
+      nombreDeTemps = 8;  // MODIFICATION : 2 mesures = 8 temps
+    }
+    
+    // On remplace le "* 16" figé par notre nouvelle variable
+    loopLengthMs = (60000.0 / currentBPM) * nombreDeTemps;
+    
     currentState = STATE_LIVE;
     liveMode = SELECT_TRACK;
-  } 
-  else if (currentState == STATE_LIVE) {
-    if (liveMode == SELECT_TRACK) liveMode = ADJUST_TRACK_VOLUME;
-    else liveMode = SELECT_TRACK; 
-    
-    dspValue = analogRead(PIN_POT_VOL);
   }
   else if (currentState == STATE_MIC) {
     // On refait le repérage des vrais index

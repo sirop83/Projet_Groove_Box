@@ -37,7 +37,7 @@ extern LiveSubState liveMode;
 
 // --- PINS (À adapter selon le câblage) ---
 const int PIN_B1 = 30; const int PIN_B2 = 28;
-const int PIN_B3 = 26; const int PIN_B4 = 24;
+const int PIN_B3 = 26; const int PIN_B4 = 27;
 
 const int PIN_B5 = 25; const int PIN_B6 = 29;
 const int PIN_B7 = 31; const int PIN_B8 = 32;

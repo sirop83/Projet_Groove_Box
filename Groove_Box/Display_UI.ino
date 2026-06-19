@@ -19,8 +19,8 @@ void drawMenuScreen() {
   u8g2.drawStr(42, 12, "STYLES :");
   
   // --- 1. LISTE DE KITS COMPLÈTE ---
-  const char* nomDesKits[] = {"Hip-Hop", "Electro", "Lo-Fi", "Chill", "Orchestre", "Horreur"};
-  int nombreTotalDeKits = 6;
+  const char* nomDesKits[] = {"Hip-Hop (4)", "Electro (4)", "Lo-Fi (4)", "Chill (4)", "Orchestre (8)", "Horreur (8)", "Mege (8)"};
+  int nombreTotalDeKits = 7;
 
   // --- 2. LA CAMÉRA "INTELLIGENTE" (À BUTÉE) ---
   static int indexDepart = 0; 
