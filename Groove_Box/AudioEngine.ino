@@ -10,6 +10,7 @@ AudioPlaySdWav           playSdWav1;
 AudioPlaySdWav           playSdWav2;
 AudioPlaySdWav           playSdWav3;
 AudioPlaySdWav           playSdWav4;
+AudioPlaySdWav           playSdWavSystem;
 
 AudioFilterStateVariable filter1;
 AudioFilterStateVariable filter2;
@@ -45,6 +46,7 @@ AudioConnection          patchCordMic1(audioInput, 0, filtreVoix, 0);
 // Mixer 1 ET Filtre Micro vers Mixer 2
 AudioConnection          patchCordMix(mixer1, 0, mixer2, 0);      // Toutes les pistes entrent ici
 AudioConnection          patchCordMic2(filtreVoix, 0, mixer2, 1); // Le micro entre ici
+AudioConnection          patchCordSystem(playSdWavSystem, 0, mixer2, 2);
 
 // Mixer 2 vers Sortie
 AudioConnection          patchCord9(mixer2, 0, i2s1, 0);
@@ -62,6 +64,7 @@ void setupAudio() {
   sgtl5000_1.enable();
   sgtl5000_1.lineOutLevel(13);
   mixer2.gain(1, 0.0);
+  mixer2.gain(2, 0.5);
   sgtl5000_1.volume(0.6);
   sgtl5000_1.inputSelect(AUDIO_INPUT_MIC); // Active le micro
   sgtl5000_1.micGain(30);                  // Gain du micro
@@ -215,4 +218,13 @@ void stopRecording() {
     recFile.write((byte*)&recDataSize, 4);
     recFile.close();
   }
+}
+void playIntroSound() {
+  playSdWavSystem.play("INTRO.WAV");
+}
+void stopTrack(int i) {
+  if (i == 0) playSdWav1.stop();
+  if (i == 1) playSdWav2.stop();
+  if (i == 2) playSdWav3.stop();
+  if (i == 3) playSdWav4.stop();
 }

@@ -57,22 +57,29 @@ void encoderBtnISR() {
   }
 }
 
+
 void setup() {
   Serial.begin(115200);
   delay(500);
+  pinMode(PIN_LED, OUTPUT);
+  digitalWrite(PIN_LED, LOW);
   
   u8g2.begin();
   u8g2.setBusClock(400000); 
 
+
   setupControls();
   attachInterrupt(digitalPinToInterrupt(PIN_ENC_BTN), encoderBtnISR, CHANGE);
   setupAudio();
+  playIntroSound();
   
   bootTimer = millis(); 
 }
 
 void loop() {
   updateControls();
+
+  
   
   // --- GESTION DE L'ENREGISTREMENT CONTINU ---
   if (currentState == STATE_MIC_RECORDING) {

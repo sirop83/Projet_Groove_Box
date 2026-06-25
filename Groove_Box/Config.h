@@ -40,12 +40,14 @@ const int PIN_B1 = 30; const int PIN_B2 = 28;
 const int PIN_B3 = 26; const int PIN_B4 = 27;
 
 const int PIN_B5 = 25; const int PIN_B6 = 29;
-const int PIN_B7 = 31; const int PIN_B8 = 32;
+const int PIN_B7 = 31; const int PIN_B8 = 32; 
 
-const int PIN_POT_DSP = 14;  
-const int PIN_POT_VOL = 16;  
-const int PIN_ENC_A = 37;     
-const int PIN_ENC_B = 39;     
+const int PIN_LED = 38;
+
+const int PIN_POT_DSP = 16;  
+const int PIN_POT_VOL = 14;  
+const int PIN_ENC_A = 39;     
+const int PIN_ENC_B = 37;     
 const int PIN_ENC_BTN = 41;   
 
 // --- VARIABLES DU JEU ---
@@ -71,9 +73,10 @@ extern Bounce encBtn;
 extern bool isRunning;
 void playTrack(int i);
 void drawBootScreen();
+void playIntroSound();
 void setupControls();
 extern unsigned long bootTimer;
-
+void stopTrack(int i);
 
 extern int longPressProgress;
 void drawLongPressPopup();

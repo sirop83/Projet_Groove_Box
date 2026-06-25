@@ -27,7 +27,7 @@ void setupControls() {
   pinMode(PIN_B7, INPUT_PULLUP); btn7.attach(PIN_B7); btn7.interval(10);
   pinMode(PIN_B8, INPUT_PULLUP); btn8.attach(PIN_B8); btn8.interval(10);
 
-  dspValue = analogRead(PIN_POT_VOL); 
+  dspValue = 1023 - analogRead(PIN_POT_VOL); 
 }
 
 void resetMachine() {
@@ -74,12 +74,15 @@ void gererBoutonSon(int numSon) {
   
   for (int i = 0; i < 4; i++) {
     if (!trackActive[i]) {
+      // NOUVEAU : On coupe physiquement la lecture si l'ancien son était différent
+      if (trackSound[i] != numSon) {
+        stopTrack(i); 
+      }
       trackSound[i] = numSon;
       piloterPiste(i);       
       return; 
     }
   }
-  
 }
 
 void updateControls() {
@@ -212,10 +215,10 @@ void updateControls() {
       selectedTrackIdx += deltaEnc;
       if (selectedTrackIdx > 3) selectedTrackIdx = 0;
       if (selectedTrackIdx < 0) selectedTrackIdx = 3;
-      dspValue = analogRead(PIN_POT_VOL);
+      dspValue = 1023 - analogRead(PIN_POT_VOL);
     }
 
-    int pot = analogRead(PIN_POT_VOL);
+    int pot = 1023 - analogRead(PIN_POT_VOL);
     if (abs(pot - dspValue) > 25) {
       dspValue = pot;
       if (liveMode == SELECT_TRACK) {
@@ -278,6 +281,13 @@ void handleShortClick() {
     currentState = STATE_LIVE;
     liveMode = SELECT_TRACK;
   }
+
+  else if (currentState == STATE_LIVE) {
+    if (liveMode == SELECT_TRACK) liveMode = ADJUST_TRACK_VOLUME;
+    else liveMode = SELECT_TRACK;
+    dspValue = 1023 - analogRead(PIN_POT_VOL);
+  }
+
   else if (currentState == STATE_MIC) {
     // On refait le repérage des vrais index
     int activeCount = 0;
