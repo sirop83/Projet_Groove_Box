@@ -258,7 +258,7 @@ void drawMicScreen() {
     } 
     else {
       // C'est le bouton Ajouter
-      u8g2.drawStr(22, yPos, "+ Ajouter piste");
+      u8g2.drawStr(22, yPos, "+ Ajouter pack");
     }
   }
 
@@ -348,9 +348,9 @@ void drawMicRecordingScreen() {
 
 void drawMicRecordDoneScreen() {
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.drawStr(22, 25, "Enregistrement OK !");
+  u8g2.drawStr(11, 25, "Enregistrement OK !");
   
   char successBuf[30];
-  sprintf(successBuf, "Sauve sur Bouton %d", chosenRecordBtn + 1);
-  u8g2.drawStr(12, 45, successBuf);
+  sprintf(successBuf, "Save sur bouton %d", chosenRecordBtn + 1);
+  u8g2.drawStr(16, 45, successBuf);
 }

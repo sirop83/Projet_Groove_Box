@@ -201,15 +201,22 @@ void updateControls() {
     if (currentKit > 7) currentKit = 1; 
     if (currentKit < 1) currentKit = 7; 
   }
-  else if (currentState == STATE_LIVE) {
-    if (btn1.fell()) gererBoutonSon(0);
-    if (btn2.fell()) gererBoutonSon(1);
-    if (btn3.fell()) gererBoutonSon(2);
-    if (btn4.fell()) gererBoutonSon(3);
-    if (btn5.fell()) gererBoutonSon(4);
-    if (btn6.fell()) gererBoutonSon(5);
-    if (btn7.fell()) gererBoutonSon(6);
-    if (btn8.fell()) gererBoutonSon(7);
+  else if (currentState == STATE_LIVE ) {
+    // 2. Gestion des boutons pour lancer les sons (seulement en SELECT_TRACK)
+    if (liveMode == SELECT_TRACK) {
+      // Les 4 premiers boutons marchent pour TOUT le monde
+      if (btn1.fell()) gererBoutonSon(0);
+      if (btn2.fell()) gererBoutonSon(1);
+      if (btn3.fell()) gererBoutonSon(2);
+      if (btn4.fell()) gererBoutonSon(3);
+      
+      if ((currentKit >= 5) || isUsingMicPack) {
+        if (btn5.fell()) gererBoutonSon(4);
+        if (btn6.fell()) gererBoutonSon(5);
+        if (btn7.fell()) gererBoutonSon(6);
+        if (btn8.fell()) gererBoutonSon(7);
+      }
+    }
 
     if (deltaEnc != 0 && liveMode == SELECT_TRACK) {
       selectedTrackIdx += deltaEnc;
