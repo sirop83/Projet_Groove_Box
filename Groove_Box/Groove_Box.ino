@@ -1,6 +1,5 @@
 #include "Config.h"
 
-// --- INITIALISATION DES VARIABLES ---
 MachineState currentState = STATE_BOOT;
 LiveSubState liveMode = SELECT_TRACK;
 
@@ -34,17 +33,15 @@ int dspValue = 0;
 
 unsigned long bootTimer = 0;
 
-// --- MATÉRIEL ---
-U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
+U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
 Encoder myEnc(PIN_ENC_A, PIN_ENC_B);
 Bounce encBtn = Bounce();
 
-// --- VARIABLES D'INTERRUPTION ---
 volatile unsigned long isrPressTime = 0;
 volatile bool isrHasClicked = false;
 volatile bool isrIsPressed = false;
 
-// Fonction d'interruption matérielle
+// Gère l'interruption matérielle liée à l'appui sur le bouton de l'encodeur rotatif
 void encoderBtnISR() {
   int state = digitalRead(PIN_ENC_BTN);
   if (state == LOW) {
@@ -57,7 +54,7 @@ void encoderBtnISR() {
   }
 }
 
-
+// Initialise les composants matériels, la communication et l'état de départ de la machine
 void setup() {
   Serial.begin(115200);
   delay(500);
@@ -67,7 +64,6 @@ void setup() {
   u8g2.begin();
   u8g2.setBusClock(400000); 
 
-
   setupControls();
   attachInterrupt(digitalPinToInterrupt(PIN_ENC_BTN), encoderBtnISR, CHANGE);
   setupAudio();
@@ -76,28 +72,24 @@ void setup() {
   bootTimer = millis(); 
 }
 
+// Boucle principale qui maintient à jour les contrôles, le flux audio et l'affichage OLED
 void loop() {
   updateControls();
 
-  
-  
-  // --- GESTION DE L'ENREGISTREMENT CONTINU ---
   if (currentState == STATE_MIC_RECORDING) {
-    continueRecording(); // Écrit le son sur la carte SD en temps réel
+    continueRecording(); 
     
-    // Si les 2 secondes de la boucle sont écoulées : on coupe !
     if (millis() - recordTimer >= loopLengthMs) {
       stopRecording();
       currentState = STATE_MIC_RECORD_DONE;
-      recordTimer = millis(); // On recycle le timer pour afficher le pop-up de succès
+      recordTimer = millis(); 
     }
   }
   
   runAudioEngine();
   
-  // --- GESTION DE L'AFFICHAGE (Une seule fois !) ---
   static unsigned long lastDrawTime = 0;
-  if (millis() - lastDrawTime > 33) { // 30 FPS
+  if (millis() - lastDrawTime > 33) { 
     lastDrawTime = millis();
     
     if (currentState == STATE_BOOT) {
@@ -109,7 +101,6 @@ void loop() {
     else {
       u8g2.clearBuffer();
       
-      // --- LE GRAND AIGUILLAGE DES ÉCRANS ---
       if (currentState == STATE_MAIN_MENU)                 drawMainMenu();
       else if (currentState == STATE_MENU)                 drawMenuScreen();
       else if (currentState == STATE_INFO)                 drawInfoScreen();
@@ -121,7 +112,6 @@ void loop() {
       else if (currentState == STATE_MIC_RECORD_DONE)      drawMicRecordDoneScreen();
       else if (currentState == STATE_LIVE)                 drawLiveScreen();
       
-      // L'animation d'appui long par-dessus le reste
       if (longPressProgress > 0) {
         drawLongPressPopup();
       }
@@ -130,7 +120,6 @@ void loop() {
     }
   }
 
-  // Quitte automatiquement l'écran "Son enregistré" après 1,5 seconde
   if (currentState == STATE_MIC_RECORD_DONE && (millis() - recordTimer > 1500)) {
     currentState = STATE_MIC_PACK;
   }

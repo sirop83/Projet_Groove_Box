@@ -13,6 +13,7 @@ Bounce btn6 = Bounce();
 Bounce btn7 = Bounce(); 
 Bounce btn8 = Bounce();
 
+// Configure les broches d'entrée, les interruptions et le système d'anti-rebond des boutons
 void setupControls() {
   pinMode(PIN_ENC_BTN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(PIN_ENC_BTN), encoderBtnISR, CHANGE);
@@ -30,6 +31,7 @@ void setupControls() {
   dspValue = 1023 - analogRead(PIN_POT_VOL); 
 }
 
+// Stoppe l'audio, remet les paramètres par défaut et ramène la machine à son état initial
 void resetMachine() {
   isRunning = false;
   nextLoopTime = 0;
@@ -44,6 +46,7 @@ void resetMachine() {
   stopAllAudio();
 }
 
+// Alterne l'activation d'une piste audio et pilote l'allumage ou l'extinction du séquenceur global
 void piloterPiste(int i) {
   trackActive[i] = !trackActive[i];
   if (!isRunning && trackActive[i]) {
@@ -64,17 +67,17 @@ void piloterPiste(int i) {
   }
 }
 
+// Assigne un nouveau son à une piste disponible ou coupe la piste si elle le jouait déjà
 void gererBoutonSon(int numSon) {
   for (int i = 0; i < 4; i++) {
     if (trackActive[i] && trackSound[i] == numSon) {
       piloterPiste(i); 
-      return; // On a fini
+      return; 
     }
   }
   
   for (int i = 0; i < 4; i++) {
     if (!trackActive[i]) {
-      // NOUVEAU : On coupe physiquement la lecture si l'ancien son était différent
       if (trackSound[i] != numSon) {
         stopTrack(i); 
       }
@@ -85,11 +88,11 @@ void gererBoutonSon(int numSon) {
   }
 }
 
+// Boucle de contrôle principale qui lit l'état du matériel (boutons, encodeur, potentiomètres) et déclenche les actions associées
 void updateControls() {
   btn1.update(); btn2.update(); btn3.update(); btn4.update();
   btn5.update(); btn6.update(); btn7.update(); btn8.update();
 
-  // Détection des boutons physiques pour l'enregistrement
   if (currentState == STATE_MIC_RECORD_READY) {
     int inputBtn = -1;
     if (btn1.fell()) inputBtn = 0;
@@ -104,16 +107,14 @@ void updateControls() {
     if (inputBtn != -1) {
       chosenRecordBtn = inputBtn;
       
-      // Configuration temporelle stricte à 120 BPM (2 secondes la boucle)
       currentBPM = 120.0;
       loopLengthMs = (60000.0 / currentBPM) * 16;
       
-      // Nom du fichier unique : ex "M_P1_B1.WAV" (Pack 1, Bouton 1)
       char recFileName[30];
       sprintf(recFileName, "M_P%d_B%d.WAV", selectedMicPackIdx + 1, chosenRecordBtn + 1);
       
-      recordTimer = millis(); // Lancement du chronomètre
-      startRecording(recFileName); // Démarrage mécanique
+      recordTimer = millis(); 
+      startRecording(recFileName); 
       currentState = STATE_MIC_RECORDING;
     }
   }
@@ -132,15 +133,12 @@ void updateControls() {
         isLongPress = true;
         longPressProgress = 0;
         
-        // --- LE NOUVEL AIGUILLAGE DU BOUTON RETOUR ---
         if (currentState == STATE_LIVE) { 
-          resetMachine(); // On coupe le son et on remet à zéro
+          resetMachine(); 
           
           if (isUsingMicPack) {
-            // Si on jouait un Pack Micro, on retourne dans le sous-menu du pack !
             currentState = STATE_MIC_PACK; 
           } else {
-            // Si on jouait un style normal, on retourne à la liste des styles
             currentState = STATE_MENU; 
           }
         }
@@ -162,25 +160,22 @@ void updateControls() {
   if (rawEnc >= oldEncPosition + 4) { deltaEnc = 1; oldEncPosition = rawEnc; }
   else if (rawEnc <= oldEncPosition - 4) { deltaEnc = -1; oldEncPosition = rawEnc; }
 
-  // Navigation Menu Micro
   if (currentState == STATE_MIC && deltaEnc != 0) {
     micMenuSelection += deltaEnc;
     
-    // On compte combien on a de pistes pour bloquer la molette
     int activeCount = 0;
     for (int i = 0; i < MAX_MIC_TRACKS; i++) {
       if (packExists[i]) activeCount++;
     }
     
-    int maxItems = activeCount + 1; // Packs + Bouton ajouter
+    int maxItems = activeCount + 1; 
     if (micMenuSelection >= maxItems) micMenuSelection = 0;
     if (micMenuSelection < 0) micMenuSelection = maxItems - 1;
   }
 
-  // Navigation Sous-Menu d'un Pack
   if (currentState == STATE_MIC_PACK && deltaEnc != 0) {
     micPackMenuSelection += deltaEnc;
-    if (micPackMenuSelection > 2) micPackMenuSelection = 0; // 3 options max (0, 1, 2)
+    if (micPackMenuSelection > 2) micPackMenuSelection = 0; 
     if (micPackMenuSelection < 0) micPackMenuSelection = 2;
   }
 
@@ -202,9 +197,7 @@ void updateControls() {
     if (currentKit < 1) currentKit = 7; 
   }
   else if (currentState == STATE_LIVE ) {
-    // 2. Gestion des boutons pour lancer les sons (seulement en SELECT_TRACK)
     if (liveMode == SELECT_TRACK) {
-      // Les 4 premiers boutons marchent pour TOUT le monde
       if (btn1.fell()) gererBoutonSon(0);
       if (btn2.fell()) gererBoutonSon(1);
       if (btn3.fell()) gererBoutonSon(2);
@@ -253,6 +246,7 @@ void updateControls() {
   }
 }
 
+// Gère la logique de navigation et de sélection lorsqu'un clic court est détecté sur l'encodeur rotatif
 void handleShortClick() {
   if (currentState == STATE_MAIN_MENU) {
     if (mainMenuSelection == 0) {
@@ -268,7 +262,6 @@ void handleShortClick() {
   else if (currentState == STATE_MENU) {
     isUsingMicPack = false; 
     
-    // NOUVEAU : On crée une variable pour le nombre de temps (16 par défaut)
     int nombreDeTemps = 16; 
 
     if (currentKit == 1) currentBPM = 150.0; 
@@ -278,11 +271,10 @@ void handleShortClick() {
     else if (currentKit == 5) currentBPM = 120.0; 
     else if (currentKit == 6) currentBPM = 80.0;
     else if (currentKit == 7) {
-      currentBPM = 100.0; // Le BPM de ton style numéro 7 
-      nombreDeTemps = 8;  // MODIFICATION : 2 mesures = 8 temps
+      currentBPM = 100.0; 
+      nombreDeTemps = 8;  
     }
     
-    // On remplace le "* 16" figé par notre nouvelle variable
     loopLengthMs = (60000.0 / currentBPM) * nombreDeTemps;
     
     currentState = STATE_LIVE;
@@ -296,7 +288,6 @@ void handleShortClick() {
   }
 
   else if (currentState == STATE_MIC) {
-    // On refait le repérage des vrais index
     int activeCount = 0;
     int activePackIndices[MAX_MIC_TRACKS];
     for (int i = 0; i < MAX_MIC_TRACKS; i++) {
@@ -307,37 +298,31 @@ void handleShortClick() {
     }
 
     if (micMenuSelection < activeCount) {
-      // Clic sur un Pack existant -> On récupère son VRAI numéro en mémoire
       selectedMicPackIdx = activePackIndices[micMenuSelection];
       micPackMenuSelection = 0; 
       currentState = STATE_MIC_PACK;
     } 
     else if (micMenuSelection == activeCount) {
-      // Clic sur "+ Ajouter piste"
-      // On cherche le premier trou vide (false) de 0 à 3
       for (int i = 0; i < MAX_MIC_TRACKS; i++) {
         if (!packExists[i]) {
-          packExists[i] = true; // On a trouvé un emplacement, on le réserve !
-          break; // On s'arrête là, pas besoin d'en créer d'autres
+          packExists[i] = true; 
+          break; 
         }
       }
     } 
   }
   else if (currentState == STATE_MIC_PACK) {
     if (micPackMenuSelection == 0) {
-      // Clic sur "Modifier" -> On bascule en mode attente du bouton à enregistrer !
       currentState = STATE_MIC_RECORD_READY;
     } 
     else if (micPackMenuSelection == 1) {
-      // Clic sur "Supprimer"
       micDeleteConfirmSelection = 0;
       currentState = STATE_MIC_DELETE_CONFIRM;
     } 
     else if (micPackMenuSelection == 2) {
-      // Clic sur "Piste" -> Charge ce Pack Micro pour le jouer en live !
       isUsingMicPack = true;
       activeMicPackIdx = selectedMicPackIdx;
-      currentBPM = 120.0; // Vitesse universelle pour vos pistes personnalisées
+      currentBPM = 120.0; 
       loopLengthMs = (60000.0 / currentBPM) * 16;
       currentState = STATE_LIVE;
       liveMode = SELECT_TRACK;
@@ -345,27 +330,21 @@ void handleShortClick() {
   }
   else if (currentState == STATE_MIC_DELETE_CONFIRM) {
     if (micDeleteConfirmSelection == 1) {
-      // OUI : On supprime ! 
       
-      // 1. Suppression physique des 4 fichiers audio potentiels sur la carte SD
       char fileToDelete[35];
       for (int btn = 1; btn <= 8; btn++) {
-        // On recrée le nom exact du fichier pour ce pack et ce bouton
         sprintf(fileToDelete, "M_P%d_B%d.WAV", selectedMicPackIdx + 1, btn);
         
-        // Si le fichier existe sur la carte SD, on l'efface sans pitié !
         if (SD.exists(fileToDelete)) {
           SD.remove(fileToDelete);
         }
       }
 
-      // 2. Libération du "slot" virtuel dans le menu
       packExists[selectedMicPackIdx] = false; 
       
       currentState = STATE_MIC;             
-      micMenuSelection = 0; // Retour en haut de la liste
+      micMenuSelection = 0; 
     } else {
-      // NON : On annule et on revient au menu du pack
       currentState = STATE_MIC_PACK;
     }
   }
