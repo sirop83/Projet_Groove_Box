@@ -63,5 +63,7 @@ Les fichiers audio de base doivent se trouver à la racine, nommés selon la nom
 
 ## 👥 Équipe & Auteurs
 
-* **Théo Romond-Dupuis** - *Développement logiciel & Architecture logicielle*
-* *(Ajoute les noms de tes coéquipiers ici (Lou, Mathys, Alla...) avec leurs rôles respectifs : Design de la boîte, Électronique, Site Web, etc.)*
+* **Théo** - *Lead Software*
+* **Mathys** - *Chef du Projet Leade dev*
+* **Alla** - *Lead Électronique*
+* **Lou** - *Lead Mécanique*
